@@ -3,15 +3,14 @@ const createTablesIfNotExists = (db) => {
         console.log("database is not connected.Aborting");
         return;
     } else {
-        db.query(`CREATE TABLE IF NOT EXISTS public.admin(
-    admin_id character varying COLLATE pg_catalog."default" NOT NULL,
+        db.query(`CREATE TABLE IF NOT EXISTS public.admins(
+    admin_id SERIAL PRIMARY KEY,
     email character varying COLLATE pg_catalog."default" NOT NULL,
     password character varying COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT admin_pkey PRIMARY KEY (admin_id),
-    CONSTRAINT admin_email_key UNIQUE (email))`);
+    CONSTRAINT admins_email_key UNIQUE (email))`);
 
-        db.query(`CREATE TABLE IF NOT EXISTS public.division_user(
-    admin_id character varying(20) COLLATE pg_catalog."default" NOT NULL,
+        db.query(`CREATE TABLE IF NOT EXISTS public.division_users(
+    admin_id integer,
     division_id character varying(20),
     division character(20) COLLATE pg_catalog."default" NOT NULL,
     email character varying(20) COLLATE pg_catalog."default" NOT NULL,
@@ -21,12 +20,14 @@ const createTablesIfNotExists = (db) => {
     CONSTRAINT division_user_email_key UNIQUE (email),
     CONSTRAINT division_user_phone_number_key UNIQUE (phone_number),
     CONSTRAINT division_user_admin_id_fkey FOREIGN KEY (admin_id)
-        REFERENCES public.admin (admin_id) MATCH SIMPLE
+        REFERENCES public.admins (admin_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
 
-        db.query(`CREATE TABLE IF NOT EXISTS public.institution_user(
+        db.query(`CREATE TABLE IF NOT EXISTS public.institution_users(
     division_id character varying(20),
+    email character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    password character varying(20) COLLATE pg_catalog."default" NOT NULL,
     institution_id character varying(20),
     district character(20) COLLATE pg_catalog."default" NOT NULL,
     taluk character(20) COLLATE pg_catalog."default" NOT NULL,
@@ -37,15 +38,18 @@ const createTablesIfNotExists = (db) => {
     name_of_khathadar character(20) COLLATE pg_catalog."default" NOT NULL,
     type_of_building character(20) COLLATE pg_catalog."default",
     CONSTRAINT institution_user_pkey PRIMARY KEY (institution_id),
+    CONSTRAINT institution_user_email_key UNIQUE (email),
     CONSTRAINT institution_user_khatha_or_property_no_key UNIQUE (khatha_or_property_no),
     CONSTRAINT institution_user_pid_key UNIQUE (pid),
     CONSTRAINT institution_user_division_id_fkey FOREIGN KEY (division_id)
-        REFERENCES public.division_user (division_id) MATCH SIMPLE
+        REFERENCES public.division_users (division_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
 
-        db.query(`CREATE TABLE IF NOT EXISTS public.site_user(
+        db.query(`CREATE TABLE IF NOT EXISTS public.site_users(
     division_id character varying(20),
+    email character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    password character varying(20) COLLATE pg_catalog."default" NOT NULL,
     site_id character varying(20),
     district character(20) COLLATE pg_catalog."default" NOT NULL,
     taluk character(20) COLLATE pg_catalog."default" NOT NULL,
@@ -58,8 +62,9 @@ const createTablesIfNotExists = (db) => {
     CONSTRAINT site_user_pkey PRIMARY KEY (site_id),
     CONSTRAINT site_user_khatha_or_property_no_key UNIQUE (khatha_or_property_no),
     CONSTRAINT site_user_pid_key UNIQUE (pid),
+    CONSTRAINT site_user_email_key UNIQUE (email),
     CONSTRAINT site_user_division_id_fkey FOREIGN KEY (division_id)
-        REFERENCES public.division_user (division_id) MATCH SIMPLE
+        REFERENCES public.division_users (division_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
 
@@ -85,11 +90,11 @@ const createTablesIfNotExists = (db) => {
     CONSTRAINT payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
     CONSTRAINT payment_details_site_id_key UNIQUE (site_id),
     CONSTRAINT payment_details_institution_id_fkey FOREIGN KEY (institution_id)
-        REFERENCES public.institution_user (institution_id) MATCH SIMPLE
+        REFERENCES public.institution_users (institution_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT payment_details_site_id_fkey FOREIGN KEY (site_id)
-        REFERENCES public.site_user (site_id) MATCH SIMPLE
+        REFERENCES public.site_users (site_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
 
@@ -103,6 +108,16 @@ const createTablesIfNotExists = (db) => {
         REFERENCES public.payment_details (sl_no) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
+
+        // Not required because we'll use the in built session store's ability to create the table
+//     db.query(`CREATE TABLE IF NOT EXISTS public.session(
+//     sid character varying COLLATE pg_catalog."default" NOT NULL,
+//     sess json NOT NULL,
+//     expire timestamp(6) NOT NULL,
+//     CONSTRAINT session_pkey PRIMARY KEY (sid)
+// ) WITH (OIDS=FALSE)`);
+
+//     db.query(`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON public.session (expire)`);
 
     console.log("tables created successfully");
     }
