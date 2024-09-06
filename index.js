@@ -2,6 +2,9 @@ import express from 'express';
 import pg from 'pg';
 import dotenv from 'dotenv';
 import createTablesIfNotExists from './utils/create_tables.js';
+import { exit } from 'process';
+
+
 const app = express();
 const port = 3000;
 dotenv.config();
@@ -19,6 +22,7 @@ try {
 } catch (err) {
     console.log("failed to connected to the database");
     console.log(err);
+    exit();
 }
 
 createTablesIfNotExists(db);
