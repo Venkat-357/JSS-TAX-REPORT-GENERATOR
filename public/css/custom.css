@@ -1,0 +1,125 @@
+body {
+    background-color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    justify-content:space-around;
+    align-items: center;
+    background-color: rgb(241, 123, 38);
+    color: rgb(9, 9, 53);
+    width: 100vw;
+}
+
+.header img {
+    height: 50px;
+}
+
+.header-title {
+    flex: 1;
+    text-align: center;
+    font-size: 30px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+}
+
+table, th, td {
+    border: 2px solid black;
+}
+
+th, td {
+    padding: 10px;
+}
+
+th {
+    background-color: rgb(241, 123, 38);
+    color: rgb(9, 9, 53);
+    font-weight: bold;
+}
+
+td {
+    background-color: #f2f2f2;
+}
+.form-container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.submit-button {
+    text-align: center;
+    margin: 20px;
+}
+
+.submit-button button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-button button:hover {
+    background-color: #0056b3;
+}
+
+.footer {
+    text-align: right;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.cpy {
+    text-align: center;
+    padding-top: 1%;
+}
+
+.header .right-logo {
+    order: 2;
+}
+.gray-out {
+    background-color: #f2f2f2;
+}
+.gray-out:hover {
+    cursor: not-allowed;
+}
+
+button > a {
+    text-decoration: none;
+    color: #ffffff;
+}

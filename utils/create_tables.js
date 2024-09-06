@@ -44,21 +44,21 @@ const createTablesIfNotExists = (db) => {
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
 
-        db.query(`CREATE TABLE IF NOT EXISTS public.institution_user(
+        db.query(`CREATE TABLE IF NOT EXISTS public.site_user(
     division_id character varying(20),
-    institution_id character varying(20),
+    site_id character varying(20),
     district character(20) COLLATE pg_catalog."default" NOT NULL,
     taluk character(20) COLLATE pg_catalog."default" NOT NULL,
-    institution_name character(20) COLLATE pg_catalog."default" NOT NULL,
+    site_name character(20) COLLATE pg_catalog."default" NOT NULL,
     village_or_city character(20) COLLATE pg_catalog."default" NOT NULL,
     pid character varying(20) COLLATE pg_catalog."default",
     khatha_or_property_no character varying(20) COLLATE pg_catalog."default" NOT NULL,
     name_of_khathadar character(20) COLLATE pg_catalog."default" NOT NULL,
     type_of_building character(20) COLLATE pg_catalog."default",
-    CONSTRAINT institution_user_pkey PRIMARY KEY (institution_id),
-    CONSTRAINT institution_user_khatha_or_property_no_key UNIQUE (khatha_or_property_no),
-    CONSTRAINT institution_user_pid_key UNIQUE (pid),
-    CONSTRAINT institution_user_division_id_fkey FOREIGN KEY (division_id)
+    CONSTRAINT site_user_pkey PRIMARY KEY (site_id),
+    CONSTRAINT site_user_khatha_or_property_no_key UNIQUE (khatha_or_property_no),
+    CONSTRAINT site_user_pid_key UNIQUE (pid),
+    CONSTRAINT site_user_division_id_fkey FOREIGN KEY (division_id)
         REFERENCES public.division_user (division_id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
