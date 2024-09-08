@@ -1,0 +1,48 @@
+<%- include(`partials/header`) -%>
+<p>payment details</p>
+<table>
+    <tr>
+        <th>INSTITUTION ID</th>
+        <th>SITE ID</th>
+        <th>ASSESSMENT YEAR</th>
+        <th>PAYMENT YEAR</th>
+        <th>RECEIPT NO / DATE</th>
+        <th>PROPERTY TAX</th>
+        <th>REBATE</th>
+        <th>SERVICE TAX</th>
+        <th>DIMENSION OF VACANT AREA IN SQFT</th>
+        <th>DIMENSION OF BUILDING AREA IN SQFT</th>
+        <th>TOTAL DIMENSION IN SQFT</th>
+        <th>TO WHICH DEPARTMENT PAID</th>
+        <th>CESSES</th>
+        <th>INTEREST</th>
+        <th>TOTAL AMOUNT</th>
+        <th>REMARKS</th>
+        <th>BILL</th>
+    </tr>
+    <% information.forEach((entry)=>{ %>
+        <tr>
+            <td><%=entry.institution_id%></td>
+            <td><%=entry.site_id%></td>
+            <td><%=entry.assessment_year%></td>
+            <td><%=entry.payment_year%></td>
+            <td><%=entry.receipt_no_or_date%></td>
+            <td><%=entry.property_tax%></td>
+            <td><%=entry.rebate%></td>
+            <td><%=entry.service_tax%></td>
+            <td><%=entry.dimension_of_vacant_area_sqft%></td>
+            <td><%=entry.dimension_of_building_area_sqft%></td>
+            <td><%=entry.total_dimension_in_sqft%></td>
+            <td><%=entry.to_which_department_paid%></td>
+            <td><%=entry.cesses%></td>
+            <td><%=entry.interest%></td>
+            <td><%=entry.total_amount%></td>
+            <td><%=entry.remarks%></td>
+            <td><%=entry.bill%></td>
+        </tr>
+
+    <% }) %>
+
+</table>
+<a href="/newpay">Add New Payment Details</a>
+<%- include(`partials/footer`) -%>

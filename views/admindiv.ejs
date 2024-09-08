@@ -1,0 +1,25 @@
+<%- include('partials/header'); -%>
+<p>Hi division users</p>
+<!-- Table stuff -->
+<table>
+    <tr>
+        <th>DIVISION ID</th>
+        <th>DIVISION</th>
+        <th>EMAIL</TH>
+        <th>PHONE</th>
+    </tr>
+    <%information.forEach((entry)=>{ %>
+        <tr>
+            <td><%=entry.division_id%></td>
+            <td><%=entry.division%></td>
+            <td><%=entry.email%></td>
+            <td><%=entry.phone_number%></td>
+        </tr>
+    <%})%>
+</table>
+<div style="display: flex; flex-direction: column;">
+    <a href="/newdiv">Add New Division User</a>
+    <a href="/admin_options">Back</a>
+</div>
+
+<%- include('partials/footer'); -%>

@@ -1,0 +1,39 @@
+<%- include('partials/header'); -%>
+<p>Hi site users</p>
+<!-- Your entires (table stuff) -->
+<table>
+    <tr>
+        <th>DIVISION ID</th>
+        <th>EMAIL</th>
+        <th>SITE ID</th>
+        <th>COUNTRY</th>
+        <th>STATE</th>
+        <th>DISTRICT</th>
+        <th>TALUK</th>
+        <th>SITE NAME</th>
+        <th>VILLAGE OR CITY</th>
+        <th>PID</th>
+        <th>KHATHA OR PROPERTY NUMBER</th>
+        <th>NAME OF KHATHADAR</th>
+        <th>TYPE OF BUILDING</th>
+    </tr>
+    <% information.forEach((entry)=>{ %>
+        <tr>
+            <td><%=entry.division_id%></td>
+            <td><%=entry.email%></td>
+            <td><%=entry.site_id%></td>
+            <td><%=entry.country%></td>
+            <td><%=entry.state%></td>
+            <td><%=entry.district%></td>
+            <td><%=entry.taluk%></td>
+            <td><%=entry.site_name%></td>
+            <td><%=entry.village_or_city%></td>
+            <td><%=entry.pid%></td>
+            <td><%=entry.khatha_or_property_no%></td>
+            <td><%=entry.name_of_khathadar%></td>
+            <td><%=entry.type_of_building%></td>
+        </tr>
+    <% }) %>
+</table>
+<a href="/newins">Create Institution User</a>
+<%- include('partials/footer'); -%>

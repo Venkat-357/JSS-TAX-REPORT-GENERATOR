@@ -16,14 +16,14 @@ export const login = async(req,res,db) => {
             req.session.user_details = {
                 email : user.email
             };
-            res.redirect("/admin");
+            res.redirect("/admin_options");
             return;
         } else {
             res.send("Invalid credentials");
             return;
         }
     }
-    // For division users
+    // For division users to show institutions
     query_result = await db.query(`SELECT * FROM division_users WHERE email = '${email}'`);
     if (query_result.rows.length > 0) {
         const user = query_result.rows[0];
@@ -38,9 +38,35 @@ export const login = async(req,res,db) => {
                 division : user.division,
                 email : user.email,
             };
-            res.redirect("/division");
+            res.redirect("/institutions");
+            return;
         } else {
             res.send("Invalid credentials");
+            return;
+        }
+    } else {
+        res.send("Invalid credentials");
+    }
+    // For division users to show sites
+    query_result = await db.query(`SELECT * FROM division_users WHERE email = '${email}'`);
+    if (query_result.rows.length > 0) {
+        const user = query_result.rows[0];
+        if (user.password === password) {
+            req.session.isLoggedIn = true;
+            req.session.isAdmin = false;
+            req.session.isDivisionUser = true;
+            req.session.isInstitutionUser = false;
+            req.session.isSiteUser = false;
+            req.session.user_details = {
+                division_id : user.division_id,
+                division : user.division,
+                email : user.email,
+            };
+            res.redirect("/sites");
+            return;
+        } else {
+            res.send("Invalid credentials");
+            return;
         }
     } else {
         res.send("Invalid credentials");
@@ -60,9 +86,11 @@ export const login = async(req,res,db) => {
                 institution : user.institution,
                 email : user.email,
             };
-            res.redirect("/institute");
+            res.redirect("/payment_details");
+            return;
         } else {
             res.send("Invalid credentials");
+            return;
         }
     } else {
         res.send("Invalid credentials");
@@ -82,9 +110,11 @@ export const login = async(req,res,db) => {
                 site : user.site,
                 email : user.email,
             };
-            res.redirect("/site");
+            res.redirect("/payment_details");
+            return;
         } else {
             res.send("Invalid credentials");
+            return;
         }
     } else {
         res.send("Invalid credentials");
