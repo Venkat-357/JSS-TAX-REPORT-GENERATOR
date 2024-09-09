@@ -12,7 +12,6 @@ export function allowAdmins(req, res, next) {
 }
 export function allowDivisionUsers(req, res, next) {
     if (req.session.isLoggedIn && req.session.isDivisionUser) {
-        console.log("Division user is allowed");
         return next();
     }
     res.redirect('/login');

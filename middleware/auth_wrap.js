@@ -9,6 +9,5 @@ export function setAuthStatus(req, res, next) {
         res.locals.isInstitutionUser = req.session.isInstitutionUser;
         res.locals.isSiteUser = req.session.isSiteUser
     }
-    console.log("setAuthStatus: fired, email",res.locals.user_details?.email);
     next();
 }

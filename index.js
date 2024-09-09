@@ -52,7 +52,6 @@ app.get('/',(req,res)=>{
 // Login methods - The same form is used for both admins, division, institution, and site users
 // The login endpoint will automatically log in the user based on the type of user
 app.get("/login", (req,res)=>{
-    console.log(req.session.isLoggedIn);
     if (req.session.isLoggedIn) {
         res.redirect("/home");
         return;
@@ -69,7 +68,6 @@ app.get("/logout", async(req,res)=> logout(req,res));
 // Main page - Will route to a different view based on the type of user
 app.get("/home", allowLoggedIn, async(req,res) => {
     // Redirect to the correct page based on the type of user
-    console.log("Redirecting to the correct page");
     if (req.session.isAdmin) {
         res.redirect("/admin");
     } else if (req.session.isDivisionUser) {
@@ -89,7 +87,7 @@ app.get("/admin", allowAdmins, (req,res)=>{
     return;
 });
 
-
+// Getting a list of all division users for viewing by admins
 app.get("/list_all_division_users", allowAdmins, async(req,res) => {
     const queryResult = await db.query("SELECT * FROM division_users");
     const information = queryResult.rows;
@@ -99,6 +97,7 @@ app.get("/list_all_division_users", allowAdmins, async(req,res) => {
     return;
 });
 
+// Getting a list of all institution users for viewing by admins
 app.get("/list_all_institution_users", allowAdmins, async(req,res) => {
     const query_result = await db.query("SELECT * FROM institution_users");
     const information = query_result.rows;
@@ -108,6 +107,7 @@ app.get("/list_all_institution_users", allowAdmins, async(req,res) => {
     return;
 });
 
+// Getting a list of all site users for viewing by admins
 app.get("/list_all_site_users", allowAdmins, async(req,res)=>{
     const query_result = await db.query("SELECT * FROM site_users");
     const information = query_result.rows;
@@ -117,6 +117,7 @@ app.get("/list_all_site_users", allowAdmins, async(req,res)=>{
     return;
 });
 
+// Getting a list of all payment details for viewing by admins
 app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
     const query_result = await db.query("SELECT * FROM payment_details JOIN bills ON payment_details.sl_no = bills.sl_no");
     const information = query_result.rows;
@@ -195,11 +196,9 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
 });
 
 
-// // Division users
+// Division users' dashboard page
 app.get("/division", allowDivisionUsers, (req,res) => {
-    console.log("/division hit")
     res.render("division.ejs");
-    console.log("division.ejs rendered")
     return;
 });
 

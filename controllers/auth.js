@@ -25,12 +25,10 @@ export const login = async(req,res,db) => {
             return;
         }
     }
-    console.log("Admin check done");
     // For division users
     query_result = await db.query(`SELECT * FROM division_users WHERE email = '${email}'`);
     if (query_result.rows.length > 0) {
         const user = query_result.rows[0];
-        console.log(user)
         if (user.password === password) {
             req.session.isLoggedIn = true;
             req.session.isAdmin = false;
