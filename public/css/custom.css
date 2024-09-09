@@ -1,5 +1,5 @@
 body {
-    background-color: #ffffff;
+    background-color: #eaeaea;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -9,6 +9,7 @@ body {
     display: flex;
     justify-content:space-around;
     align-items: center;
+    padding: 10px;
     background-color: rgb(241, 123, 38);
     color: rgb(9, 9, 53);
     width: 100vw;
@@ -26,10 +27,14 @@ body {
     font-weight: bold;
 }
 
+.overflow-scroll {
+    overflow-x: scroll;
+}
+
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
+    width: 98vw;
+    max-width: 98vw;
+    margin: 20px 10px;
     font-size: 16px;
     text-align: left;
 }

@@ -1,9 +1,13 @@
 <%- include('partials/header'); -%>
 <section class="landing-page">
-    <div class="container">
+    <div class="form-container">
         <h1>Welcome to JSS Tax Report Generator</h1>
         <p>Your solution for generating tax reports efficiently and accurately.</p>
-        <a href="/login" class="btn btn-primary">Login</a>
+        <% if (isLoggedIn) { %>
+            <a class="btn btn-success" href="/home">Go to your dashboard</a>
+        <% } else { %>
+            <a class="btn btn-primary" href="/login">Login</a>
+        <% } %>
     </div>
 </section>
 <%- include('partials/footer'); -%>

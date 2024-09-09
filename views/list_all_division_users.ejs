@@ -1,6 +1,6 @@
 <%- include('partials/header'); -%>
-<p>Hi division users</p>
-<!-- Table stuff -->
+<h3>List of all division users:</h3>
+<a href="/create_new_division" class="btn btn-primary">Add a New Division User</a>
 <table>
     <tr>
         <th>DIVISION ID</th>
@@ -17,9 +17,5 @@
         </tr>
     <%})%>
 </table>
-<div style="display: flex; flex-direction: column;">
-    <a href="/newdiv">Add New Division User</a>
-    <a href="/admin_options">Back</a>
-</div>
 
 <%- include('partials/footer'); -%>
