@@ -1,9 +1,8 @@
 <%- include('partials/header'); -%>
-<h3>List of all institution users:</h3>
+<h3>List of all institution users in division <%- user_details.division -%>:</h3>
 <div class="overflow-scroll">
 <table>
     <tr>
-        <th>DIVISION ID</th>
         <th>EMAIL</th>
         <th>INSTITUTION ID</th>
         <th>COUNTRY</th>
@@ -19,7 +18,6 @@
     </tr>
     <% information.forEach((entry)=>{ %>
         <tr>
-            <td><%=entry.division_id%></td>
             <td><%=entry.email%></td>
             <td><%=entry.institution_id%></td>
             <td><%=entry.country%></td>

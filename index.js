@@ -99,6 +99,7 @@ app.get("/list_all_division_users", allowAdmins, async(req,res) => {
 
 // Getting a list of all institution users for viewing by admins
 app.get("/list_all_institution_users", allowAdmins, async(req,res) => {
+    // UNTESTED
     const query_result = await db.query("SELECT * FROM institution_users");
     const information = query_result.rows;
     res.render("list_all_institution_users.ejs",{
@@ -109,6 +110,7 @@ app.get("/list_all_institution_users", allowAdmins, async(req,res) => {
 
 // Getting a list of all site users for viewing by admins
 app.get("/list_all_site_users", allowAdmins, async(req,res)=>{
+    // UNTESTED
     const query_result = await db.query("SELECT * FROM site_users");
     const information = query_result.rows;
     res.render("list_all_site_users.ejs",{
@@ -119,7 +121,10 @@ app.get("/list_all_site_users", allowAdmins, async(req,res)=>{
 
 // Getting a list of all payment details for viewing by admins
 app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
-    const query_result = await db.query("SELECT * FROM payment_details JOIN bills ON payment_details.sl_no = bills.sl_no");
+    // UNTESTED
+    // TODO: Need to show division details by joining that table here too
+    // NOTE: LEFT JOIN TO DISPLAY EVEN IF THE BILL IS NOT UPLOADED
+    const query_result = await db.query("SELECT * FROM payment_details LEFT JOIN bills ON payment_details.sl_no = bills.sl_no");
     const information = query_result.rows;
     res.render("list_all_payment_details.ejs",{
         information : information,
@@ -202,19 +207,41 @@ app.get("/division", allowDivisionUsers, (req,res) => {
     return;
 });
 
-// // site or institutions users page to show payment details
-// app.get("/payment_details",async(req,res)=>{
-//     if(!req.session.isLoggedIn || !req.session.isInstitutionUser || !req.session.isSiteUser) {
-//         res.redirect("/login");
-//         return ;
-//     }
-//     const query_result = await db.query("SELECT * FROM payment_details JOIN bills ON payment_details.sl_no = bills.sl_no");
-//     const information = query_result.rows;
-//     res.render("payment_details.ejs",{
-//         information : information,
-//     });
-//     return;
-// });
+// Getting a list of all institution users under a division for viewing by a division user
+app.get("/list_institution_users_in_division", allowDivisionUsers, async(req,res) => {
+    const queryResult = await db.query(`SELECT institution_id,institution_users.email,country,state,district,taluk,institution_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building FROM institution_users JOIN division_users ON institution_users.division_id = division_users.division_id WHERE division_users.division_id = '${req.session.user_details.division_id}'`);
+    const information = queryResult.rows;
+    res.render("list_institution_users_in_division.ejs",{
+        information : information,
+    });
+    return;
+});
+
+// Getting a list of all site users under a division for viewing by a division user
+app.get("/list_site_users_in_division", allowDivisionUsers, async(req,res) => {
+    const queryResult = await db.query(`SELECT site_id,site_users.email,country,state,district,taluk,site_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building FROM site_users JOIN division_users ON site_users.division_id = division_users.division_id WHERE division_users.division_id = '${req.session.user_details.division_id}'`);
+    const information = queryResult.rows;
+    res.render("list_site_users_in_division.ejs",{
+        information : information,
+    });
+    return;
+});
+
+// Getting a list of all payment details under a division for viewing by a division user
+app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) => {
+    // SOME DUPLICATION DUE TO SITE AND INSTITUTION BOTH BEING FOREIGN KEYS, need to fix this
+    const institution_payment_details_query_result = await db.query(`SELECT * FROM payment_details JOIN institution_users ON payment_details.institution_id = institution_users.institution_id LEFT JOIN bills ON payment_details.sl_no = bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
+    const site_payment_details_query_result = await db.query(`SELECT * FROM payment_details JOIN site_users ON payment_details.site_id = site_users.site_id LEFT JOIN bills ON payment_details.sl_no = bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
+    const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+    const site_payment_details_in_division = site_payment_details_query_result.rows;
+    res.render("list_payment_details_in_division.ejs",{
+        institution_payment_details_in_division,
+        site_payment_details_in_division
+    });
+    return;
+});
+
+
 
 
 
