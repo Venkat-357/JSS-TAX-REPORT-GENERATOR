@@ -28,6 +28,7 @@ const createTablesIfNotExists = (db) => {
     division_id character varying(50),
     email character varying(50) COLLATE pg_catalog."default" NOT NULL,
     password character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    phone_number bigint NOT NULL,
     institution_id character varying(50),
     country character(50) COLLATE pg_catalog."default" NOT NULL,
     state character(50) COLLATE pg_catalog."default" NOT NULL,
@@ -41,6 +42,7 @@ const createTablesIfNotExists = (db) => {
     type_of_building character(50) COLLATE pg_catalog."default",
     CONSTRAINT institution_user_pkey PRIMARY KEY (institution_id),
     CONSTRAINT institution_user_email_key UNIQUE (email),
+    CONSTRAINT institution_user_phone_number_key UNIQUE (phone_number),
     CONSTRAINT institution_user_khatha_or_property_no_key UNIQUE (khatha_or_property_no),
     CONSTRAINT institution_user_pid_key UNIQUE (pid),
     CONSTRAINT institution_user_division_id_fkey FOREIGN KEY (division_id)
@@ -52,6 +54,7 @@ const createTablesIfNotExists = (db) => {
     division_id character varying(50),
     email character varying(50) COLLATE pg_catalog."default" NOT NULL,
     password character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    phone_number bigint NOT NULL,
     site_id character varying(50),
     country character(50) COLLATE pg_catalog."default" NOT NULL,
     state character(50) COLLATE pg_catalog."default" NOT NULL,
@@ -67,6 +70,7 @@ const createTablesIfNotExists = (db) => {
     CONSTRAINT site_user_khatha_or_property_no_key UNIQUE (khatha_or_property_no),
     CONSTRAINT site_user_pid_key UNIQUE (pid),
     CONSTRAINT site_user_email_key UNIQUE (email),
+    CONSTRAINT site_user_phone_number_key UNIQUE (phone_number),
     CONSTRAINT site_user_division_id_fkey FOREIGN KEY (division_id)
         REFERENCES public.division_users (division_id) MATCH SIMPLE
         ON UPDATE CASCADE

@@ -1,0 +1,73 @@
+<%- include(`partials/header`); -%>
+<form action="/create_new_site" method="post" class="form-container">
+    <div class="form-group">
+        <label for="division-id">DIVISION ID :</label>
+        <input id="division-id" type="number" name="division-id" required
+        <% if (division_id) { %>
+        value="<%= division_id %>"
+        readonly
+        class="gray-out"
+        <% } %>
+        >
+    </div>
+    <div class="form-group">
+        <label for="email">EMAIL :</label>
+        <input type="text" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="password">PASSWORD :</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <!-- Phone number -->
+    <div class="form-group">
+        <label for="phone-number">PHONE NUMBER :</label>
+        <input type="text" id="phone-number" name="phone-number" required>
+    </div>
+    <div class="form-group">
+        <label for="site-id">site ID :</label>
+        <input type="text" id="site-id" name="site-id" required>
+    </div>
+    <div class="form-group">
+        <label for="country">COUNTRY :</label>
+        <input type="text" id="country" name="country" required>
+    </div>
+    <div class="form-group">
+        <label for="state">STATE :</label>
+        <input type="text" id="state" name="state" required>
+    </div>
+    <div class="form-group">
+        <label for="district">DISTRICT :</label>
+        <input type="text" id="district" name="district" required>
+    </div>
+    <div class="form-group">
+        <label for="taluk">TALUK :</label>
+        <input type="text" id="taluk" name="taluk" required>
+    </div>
+    <div class="form-group">
+        <label for="site-name">SITE NAME :</label>
+        <input type="text" id="site-name" name="site-name" required>
+    </div>
+    <div class="form-group">
+        <label for="village">VILLAGE OR CITY :</label>
+        <input type="text" id="village" name="village" required>
+    </div>
+    <div class="form-group">
+        <label for="pid">PID :</label>
+        <input type="text" id="pid" name="pid" required>
+    </div>
+    <div class="form-group">
+        <label for="khatha-no">KHATHA OR PROPERTY NUMBER :</label>
+        <input type="text" id="khatha-no" name="khatha-no" required>
+    </div>
+    <div class="form-group">
+        <label for="khathadar-name">NAME OF KHATHADAR :</label>
+        <input type="text" id="khathadar-name" name="khathadar-name" required>
+    </div>
+    <div class="form-group">
+        <label for="type-of-building">TYPE OF BUILDING :</label>
+        <input type="text" id="type-of-building" name="type-of-building" required>
+    </div>
+
+    <button type="submit">Submit</button>
+</form>
+<%- include(`partials/footer`); -%>

@@ -162,10 +162,7 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
         res.send("Invalid phone number");
         return;
     }
-    if (isNaN(division_id)) {
-        res.send("Invalid division id");
-        return;
-    }
+
     if (isNaN(admin_id)) {
         res.send("Invalid admin id");
         return;
@@ -244,89 +241,159 @@ app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) 
 });
 
 
+// Create new institution users by division users
+// NEEDS MORE RIGOOROUS TESTING
+app.get("/create_new_institution", allowDivisionUsers, (req,res)=>{
+    res.render("create_new_institution.ejs", 
+        {division_id: req.session.user_details.division_id}
+    );
+    return;
+});
+
+app.post("/create_new_institution", allowDivisionUsers, async(req,res)=>{
+    const division_id = req.body[`division-id`];
+    const email = req.body.email;
+    const password = req.body.password;
+    const phone_number = req.body[`phone-number`];
+    const institution_id = req.body[`institution-id`];
+    const country = req.body.country;
+    const state = req.body.state;
+    const district = req.body.district;
+    const taluk = req.body.taluk;
+    const institution_name = req.body[`institution-name`];
+    const village = req.body.village;
+    const pid = req.body.pid;
+    const khatha_no = req.body[`khatha-no`];
+    const khathadar_name = req.body[`khathadar-name`];
+    const building_type = req.body[`type-of-building`];
+
+    // Validate the input fields
+    if (!validateEmail(email)) {
+        res.send("Invalid email");
+        return;
+    }
+    // if (!validatePassword(password)) {
+    //     res.send("Invalid password");
+    //     return;
+    // }
+    if (phone_number.length !== 10 || isNaN(phone_number)) {
+        res.send("Invalid phone number");
+        return;
+    }
+    if ( division_id !== req.session.user_details.division_id) {
+        res.send("Invalid division id");
+        return;
+    }
+    // Check if the Institution id, email, and phone number already exist
+    let query_result = await db.query(`SELECT * FROM institution_users WHERE institution_id = $1`,[institution_id]);
+    if (query_result.rows.length !== 0) {
+        res.send("Institution id already exists");
+        return;
+    }
+    // We have to make sure that the email is unique across all the users, because login depends on the email
+    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+                                    UNION SELECT email FROM admins WHERE email = '${email}'
+                                    UNION SELECT email FROM institution_users WHERE email = '${email}'
+                                    UNION SELECT email FROM site_users WHERE email = '${email}'`);
+    if (query_result.rows.length !== 0) {
+        res.send("Email already exists");
+        return;
+    }
+    query_result = await db.query(`SELECT * FROM institution_users WHERE phone_number = $1`,[phone_number]);
+    if (query_result.rows.length !== 0) {
+        res.send("Phone number already exists");
+        return;
+    }
+
+    try {
+        await db.query(`INSERT INTO institution_users (division_id,email,password,phone_number,institution_id,country,state,district,taluk,institution_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,[division_id,email,password,phone_number,institution_id,country,state,district,taluk,institution_name,village,pid,khatha_no,khathadar_name,building_type]);
+        console.log("new institution user added successfully");
+        res.redirect("/division");
+        return;
+    } catch (error) {
+        console.log("failed to add a new institution user");
+        console.log(error)
+        return;
+    }
+});
 
 
+// Create new site users by division users
+// NEEDS MORE RIGOOROUS TESTING
+app.get("/create_new_site", allowDivisionUsers, (req,res)=>{
+    res.render("create_new_site.ejs", 
+        {division_id: req.session.user_details.division_id}
+    );
+    return;
+});
 
-// //to add new institution user by division user
-// app.get("/newins",(req,res)=>{
-//     if(!req.session.isDivisionUser)
-//     {
-//         res.send("you are not permitted to add a new institution user");
-//         return;
-//     }
-//     res.render("new_institution_user.ejs");
-//     return;
-// });
+app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
+    const division_id = req.body[`division-id`];
+    const email = req.body.email;
+    const password = req.body.password;
+    const phone_number = req.body[`phone-number`];
+    const site_id = req.body[`site-id`];
+    const country = req.body.country;
+    const state = req.body.state;
+    const district = req.body.district;
+    const taluk = req.body.taluk;
+    const site_name = req.body[`site-name`];
+    const village = req.body.village;
+    const pid = req.body.pid;
+    const khatha_no = req.body[`khatha-no`];
+    const khathadar_name = req.body[`khathadar-name`];
+    const building_type = req.body[`type-of-building`];
 
-// app.post("/newins",async(req,res)=>{
-//     const division_id = req.body[`divison-id`];
-//     const email = req.body.email;
-//     const password = req.body.password;
-//     const institution_id = req.body[`institution-id`];
-//     const country = req.body.country;
-//     const state = req.body.state;
-//     const district = req.body.district;
-//     const taluk = req.body.taluk;
-//     const institution_name = req.body[`institution-name`];
-//     const village = req.body.village;
-//     const pid = req.body.pid;
-//     const khatha_no = req.body[`khatha-no`];
-//     const khathadar_name = req.body[`khathadar-name`];
-//     const building_type = req.body[`type-of-building`];
+    // Validate the input fields
+    if (!validateEmail(email)) {
+        res.send("Invalid email");
+        return;
+    }
+    // if (!validatePassword(password)) {
+    //     res.send("Invalid password");
+    //     return;
+    // }
+    if (phone_number.length !== 10 || isNaN(phone_number)) {
+        res.send("Invalid phone number");
+        return;
+    }
+    if ( division_id !== req.session.user_details.division_id) {
+        res.send("Invalid division id");
+        return;
+    }
+    // Check if the site id, email, and phone number already exist
+    let query_result = await db.query(`SELECT * FROM site_users WHERE site_id = $1`,[site_id]);
+    if (query_result.rows.length !== 0) {
+        res.send("site id already exists");
+        return;
+    }
+    // We have to make sure that the email is unique across all the users, because login depends on the email
+    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+                                    UNION SELECT email FROM admins WHERE email = '${email}'
+                                    UNION SELECT email FROM institution_users WHERE email = '${email}'
+                                    UNION SELECT email FROM site_users WHERE email = '${email}'`);
+    if (query_result.rows.length !== 0) {
+        res.send("Email already exists");
+        return;
+    }
+    query_result = await db.query(`SELECT * FROM site_users WHERE phone_number = $1`,[phone_number]);
+    if (query_result.rows.length !== 0) {
+        res.send("Phone number already exists");
+        return;
+    }
 
-//     try {
-//         await db.query("INSERT INTO institution_users (division_id,email,password,institution_id,country,state,district,taluk,institution_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",[division_id,email,password,institution_id,country,state,district,taluk,institution_name,village,pid,khatha_no,khathadar_name,building_type]);
-//         console.log("new institution user is added successfully");
-//         res.redirect("/institutions");
-//         return;
-//     } catch (error) {
-//         console.log("failed to add a new institution user");
-//         console.log(error);
-//         res.redirect("/newins");
-//         return;
-//     }
-// });
+    try {
+        await db.query(`INSERT INTO site_users (division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,[division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village,pid,khatha_no,khathadar_name,building_type]);
+        console.log("new site user added successfully");
+        res.redirect("/division");
+        return;
+    } catch (error) {
+        console.log("failed to add a new site user");
+        console.log(error)
+        return;
+    }
+});
 
-
-// //to add new site users by division users
-// app.get("/newsite",(req,res)=>{
-//     if(!req.session.isDivisionUser)
-//     {
-//         res.send("you are not permitted to add a new institution user");
-//         return;
-//     }
-//     res.render("new_site_users.ejs");
-//     return;
-// });
-
-// app.post("/newsite",async(req,res)=>{
-//     const division_id = req.body[`divison-id`];
-//     const email = req.body.email;
-//     const password = req.body.password;
-//     const site_id = req.body[`site-id`];
-//     const country = req.body.country;
-//     const state = req.body.state;
-//     const district = req.body.district;
-//     const taluk = req.body.taluk;
-//     const site_name = req.body[`site-name`];
-//     const village = req.body.village;
-//     const pid = req.body.pid;
-//     const khatha_no = req.body[`khatha-no`];
-//     const khathadar_name = req.body[`khathadar-name`];
-//     const building_type = req.body[`type-of-building`];
-
-//     try {
-//         await db.query("INSERT INTO site_users (division_id,email,password,site_id,country,state,district,taluk,site_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)",[division_id,email,password,site_id,country,state,district,taluk,site_name,village,pid,khatha_no,khathadar_name,building_type]);
-//         console.log("new site user is added successfully");
-//         res.redirect("/sites");
-//         return;
-//     } catch (error) {
-//         console.log("failed to add a new institution user");
-//         console.log(error);
-//         res.redirect("/newsite");
-//         return;
-//     }
-// });
 
 // //to add new payment details by institution users or site users
 // app.get("/newpay",(req,res)=>{
