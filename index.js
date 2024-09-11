@@ -124,10 +124,13 @@ app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
     // UNTESTED
     // TODO: Need to show division details by joining that table here too
     // NOTE: LEFT JOIN TO DISPLAY EVEN IF THE BILL IS NOT UPLOADED
-    const query_result = await db.query("SELECT * FROM payment_details LEFT JOIN bills ON payment_details.sl_no = bills.sl_no");
-    const information = query_result.rows;
+    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no`);
+    const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no`);
+    const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+    const site_payment_details_in_division = site_payment_details_query_result.rows;
     res.render("list_all_payment_details.ejs",{
-        information : information,
+        institution_payment_details_in_division,
+        site_payment_details_in_division
     });
     return;
 });
@@ -229,9 +232,8 @@ app.get("/list_site_users_in_division", allowDivisionUsers, async(req,res) => {
 
 // Getting a list of all payment details under a division for viewing by a division user
 app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) => {
-    // SOME DUPLICATION DUE TO SITE AND INSTITUTION BOTH BEING FOREIGN KEYS, need to fix this
-    const institution_payment_details_query_result = await db.query(`SELECT * FROM payment_details JOIN institution_users ON payment_details.institution_id = institution_users.institution_id LEFT JOIN bills ON payment_details.sl_no = bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
-    const site_payment_details_query_result = await db.query(`SELECT * FROM payment_details JOIN site_users ON payment_details.site_id = site_users.site_id LEFT JOIN bills ON payment_details.sl_no = bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
+    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
+    const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
     const institution_payment_details_in_division = institution_payment_details_query_result.rows;
     const site_payment_details_in_division = site_payment_details_query_result.rows;
     res.render("list_payment_details_in_division.ejs",{

@@ -109,9 +109,8 @@ INSERT INTO site_users (
     'Site for PDABLDG'
 );
 
-INSERT INTO payment_details (
+INSERT INTO institution_payment_details (
     institution_id,
-    site_id,
     assessment_year,
     payment_year,
     receipt_no_or_date,
@@ -128,7 +127,6 @@ INSERT INTO payment_details (
     remarks
 ) VALUES (
     'GLDNJBLEE',
-    'SITEGLDNJBLEE',
     2021,
     2022,
     'receipt001',
@@ -145,12 +143,61 @@ INSERT INTO payment_details (
     'Paid'
 ), (
     'PDABLDG',
-    'PDASITE',
     2019,
     2020,
     'receipt003',
     6000,
     600,
+    350,
+    1200,
+    2200,
+    3400,
+    'BMTC',
+    220,
+    60,
+    7230,
+    'Paid'
+);
+
+INSERT INTO site_payment_details (
+    site_id,
+    assessment_year,
+    payment_year,
+    receipt_no_or_date,
+    property_tax,
+    rebate,
+    service_tax,
+    dimension_of_vacant_area_sqft,
+    dimension_of_building_area_sqft,
+    total_dimension_in_sqft,
+    to_which_department_paid,
+    cesses,
+    interest,
+    total_amount,
+    remarks
+) VALUES (
+    'SITEGLDNJBLEE',
+    2021,
+    2022,
+    'receipt001',
+    50710,
+    580,
+    300,
+    6900,
+    6900,
+    6900,
+    'MCC',
+    200,
+    50,
+    6050,
+    'Paid'
+), (
+    'PDASITE',
+    2019,
+    2020,
+    'receipt003',
+    89100,
+    6020,
     350,
     1200,
     2200,

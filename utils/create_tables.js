@@ -73,10 +73,9 @@ const createTablesIfNotExists = (db) => {
         ON DELETE CASCADE)`);
 
 
-        db.query(`CREATE TABLE IF NOT EXISTS public.payment_details(
+        db.query(`CREATE TABLE IF NOT EXISTS public.institution_payment_details(
     sl_no SERIAL PRIMARY KEY,
     institution_id character varying(50) COLLATE pg_catalog."default",
-    site_id character varying(50) COLLATE pg_catalog."default",
     assessment_year integer NOT NULL,
     payment_year integer NOT NULL,
     receipt_no_or_date character varying(50) COLLATE pg_catalog."default" NOT NULL,
@@ -91,27 +90,58 @@ const createTablesIfNotExists = (db) => {
     interest integer NOT NULL,
     total_amount integer NOT NULL,
     remarks character varying(10) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
-    CONSTRAINT payment_details_site_id_key UNIQUE (site_id),
+    CONSTRAINT institution_payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
+    CONSTRAINT payment_details_institution_id_key UNIQUE (institution_id),
     CONSTRAINT payment_details_institution_id_fkey FOREIGN KEY (institution_id)
         REFERENCES public.institution_users (institution_id) MATCH SIMPLE
         ON UPDATE CASCADE
-        ON DELETE CASCADE,
-    CONSTRAINT payment_details_site_id_fkey FOREIGN KEY (site_id)
-        REFERENCES public.site_users (site_id) MATCH SIMPLE
-        ON UPDATE CASCADE
         ON DELETE CASCADE)`);
 
-        db.query(`CREATE TABLE IF NOT EXISTS public.bills(
+        db.query(`CREATE TABLE IF NOT EXISTS public.site_payment_details(
+            sl_no SERIAL PRIMARY KEY,
+            site_id character varying(50) COLLATE pg_catalog."default" NOT NULL,
+            assessment_year integer NOT NULL,
+            payment_year integer NOT NULL,
+            receipt_no_or_date character varying(50) COLLATE pg_catalog."default" NOT NULL,
+            property_tax integer NOT NULL,
+            rebate integer NOT NULL,
+            service_tax integer NOT NULL,
+            dimension_of_vacant_area_sqft integer NOT NULL,
+            dimension_of_building_area_sqft integer NOT NULL,
+            total_dimension_in_sqft integer NOT NULL,
+            to_which_department_paid character(50) COLLATE pg_catalog."default" NOT NULL,
+            cesses integer NOT NULL,
+            interest integer NOT NULL,
+            total_amount integer NOT NULL,
+            remarks character varying(10) COLLATE pg_catalog."default" NOT NULL,
+            CONSTRAINT site_payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
+            CONSTRAINT payment_details_site_id_key UNIQUE (site_id),
+            CONSTRAINT payment_details_site_id_fkey FOREIGN KEY (site_id)
+                REFERENCES public.site_users (site_id) MATCH SIMPLE
+                ON UPDATE CASCADE
+                ON DELETE CASCADE)`);
+
+        db.query(`CREATE TABLE IF NOT EXISTS public.institution_bills(
     sl_no integer NOT NULL,
     filename character varying(255) COLLATE pg_catalog."default" NOT NULL,
     filetype character varying(50) COLLATE pg_catalog."default",
     data bytea,
     uploaded_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT bills_sl_no_fkey FOREIGN KEY (sl_no)
-        REFERENCES public.payment_details (sl_no) MATCH SIMPLE
+        REFERENCES public.institution_payment_details (sl_no) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE)`);
+
+        db.query(`CREATE TABLE IF NOT EXISTS public.site_bills(
+            sl_no integer NOT NULL,
+            filename character varying(255) COLLATE pg_catalog."default" NOT NULL,
+            filetype character varying(50) COLLATE pg_catalog."default",
+            data bytea,
+            uploaded_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT bills_sl_no_fkey FOREIGN KEY (sl_no)
+                REFERENCES public.site_payment_details (sl_no) MATCH SIMPLE
+                ON UPDATE CASCADE
+                ON DELETE CASCADE)`);
 
         // Not required because we'll use the in built session store's ability to create the table
 //     db.query(`CREATE TABLE IF NOT EXISTS public.session(
