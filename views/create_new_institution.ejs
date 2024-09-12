@@ -2,7 +2,7 @@
 <form action="/create_new_institution" method="post" class="form-container">
     <div class="form-group">
         <label for="division-id">DIVISION ID :</label>
-        <input id="division-id" type="number" name="division-id" required
+        <input id="division-id" type="text" name="division-id"
         <% if (division_id) { %>
         value="<%= division_id %>"
         readonly
