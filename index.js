@@ -3,11 +3,12 @@ import pg from 'pg';
 import bodyParser from 'body-parser';
 import session from 'express-session';
 import dotenv from 'dotenv';
+import multer from 'multer';
 dotenv.config(); // Load the environment variables from the .env file
 import { exit } from 'process';
 import createTablesIfNotExists from './utils/create_tables.js';
 import {setAuthStatus} from './middleware/auth_wrap.js';
-import { allowAdmins, allowAdminsAndDivisionUsers, allowLoggedIn, allowDivisionUsers } from './middleware/restrict_routes.js';
+import { allowAdmins, allowAdminsAndDivisionUsers, allowLoggedIn, allowDivisionUsers, allowInstitutionUsers, allowSiteUsers } from './middleware/restrict_routes.js';
 import { validateEmail, validatePassword } from './utils/Validation.js';
 
 // Basic Express app setup
@@ -22,6 +23,20 @@ const db = new pg.Client({
 });
 app.set("view engine","ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
+// Configure Multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for security
+    fileFilter: (req, file, cb) => {
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (allowedMimeTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only JPEG, PNG, and GIF are allowed!'), false);
+        }
+    }
+});
 // Creating the `public` folder as the static folder, allows our app to use the files in the `public` folder, like the JSS logo
 app.use(express.static('public'))
 app.use(
@@ -394,54 +409,237 @@ app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
     }
 });
 
+//handling the /institution route and displaying the home page of institution users
+app.get("/institution",allowInstitutionUsers,(req,res)=>{
+    res.render("institution.ejs");
+    return;
+});
 
-// //to add new payment details by institution users or site users
-// app.get("/newpay",(req,res)=>{
-//     if(!req.session.isInstitutionUser || !req.session.isSiteUser)
-//     {
-//         res.send("you are not permitted to add a new payment details");
-//         return;
-//     }
-//     res.render("new_payment_details.ejs");
-//     return;
-// });
+//handling the /list_payment_details_in_institution route to display all the institution payment details  
+app.get("/list_payment_details_in_institution",allowInstitutionUsers,async(req,res)=>{
+    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = '${req.session.user_details.institution_id}'`);
+    const information = institution_payment_details_query_result.rows;
+    res.render("list_payment_details_in_institution.ejs",{
+        information : information,
+    });
+    return;
+});
 
-// app.post("/newpay",async(req,res)=>{
-//     const institution_id = req.body[`institution-id`];
-//     const site_id = req.body[`site-id`];
-//     const assessment_year = req.body[`assessment-year`];
-//     const payment_year = req.body[`payment-year`];
-//     const receipt_no = req.body['receipt-no'];
-//     const property_tax = req.body[`property-tax`];
-//     const rebate = req.body.rebate;
-//     const service_tax = req.body[`service-tax`];
-//     const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
-//     const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
-//     const total_dimension = req.body[`total-dimension`];
-//     const department_paid = req.body[`department-paid`];
-//     const cesses = req.body.cesses;
-//     const total_amount = req.body[`total-amount`];
-//     const remarks = req.body.remarks;
+//handling the /new_institution_payment_details route and displaying the page to add new institution users
+app.get("/new_institution_payment_details",allowInstitutionUsers,(req,res)=>{
+    res.render("new_institution_payment_details.ejs",{
+        institution_id:req.session.user_details.institution_id,
+    });
+    return;
+});
 
-//     try {
-//         let s_no = await db.query("INSERT INTO payment_details (institution_id,site_id,assessment_year,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks RETURNING s_no) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)",[institution_id,site_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,total_amount,remarks])
-//         if(req.file) {
-//             const fileBuffer = req.file.buffer;
-//             const fileType = req.file.mimetype;
-//             const fileName = req.file.originalname;
-//             //insert the image into database
-//             await db.query(`INSERT INTO bills (s_no,data,fileType,fileName) VALUES (${s_no.rows[0].s_no},$1,$2,$3)`,[fileBuffer,fileType,fileName]);
-//         }
-//         console.log("new payment details are added successfully");
-//         res.redirect("/payment_details");
-//         return;
-//     } catch (error) {
-//         console.log("failed to add the new payment details");
-//         console.log(error);
-//         res.redirect("/newpay");
-//         return;
-//     }
-// });
+//handling the /new_institution_payment_details route to upload the new institution payment details to the database
+app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single('file'),async(req,res)=>{
+    const institution_id = req.body[`institution-id`];
+    const assessment_year = req.body[`assessment-year`];
+    const payment_year = req.body[`payment-year`];
+    const receipt_no = req.body['receipt-no'];
+    const property_tax = req.body[`property-tax`];
+    const rebate = req.body.rebate;
+    const service_tax = req.body[`service-tax`];
+    const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
+    const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
+    const total_dimension = req.body[`total-dimension`];
+    const department_paid = req.body[`department-paid`];
+    const cesses = req.body.cesses;
+    const interest = req.body.interest;
+    const total_amount = req.body[`total-amount`];
+    const remarks = req.body.remarks;
+    try {
+            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,assessment_year,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[institution_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
+            if(req.file) {
+            const fileBuffer = req.file.buffer;
+            const fileType = req.file.mimetype;
+            const fileName = req.file.originalname;
+            const timeStamp = new Date().getTime();
+            console.log(fileBuffer);
+            console.log(fileType);
+            console.log(fileName);
+            console.log(timeStamp);
+            //insert the image into database
+            await db.query(`INSERT INTO institution_bills (sl_no,fileName,filetype,data,uploaded_at) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3,$4)`,[fileBuffer,fileType,fileName,timeStamp]);
+            }
+            console.log("new institution payment details are added successfully");
+            res.redirect("/list_payment_details_in_institution");
+            return;
+        } catch (error) {
+            console.log("failed to add the new institution payment details");
+            console.log(error);
+            res.redirect("/new_institution_payment_details");
+            return;
+        }
+});
+
+//handling the /site route and displaying the home page of site users
+app.get("/site",allowSiteUsers,allowSiteUsers,(req,res)=>{
+    res.render("site.ejs");
+    return;
+});
+
+//handling the /list_payment_details_in_site route to display all the site payment details
+app.get("/list_payment_details_in_site",allowSiteUsers,async(req,res)=>{
+    const institution_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = '${req.session.user_details.site_id}'`);
+    const information = institution_payment_details_query_result.rows;
+    res.render("list_payment_details_in_site.ejs",{
+        information : information,
+    });
+    return;
+});
+
+//handling the /new_site_payment_details route to display the page to add new site payment details
+app.get("/new_site_payment_details",allowSiteUsers,(req,res)=>{
+    res.render("new_site_payment_details.ejs",{
+        site_id : req.session.user_details.site_id,
+    });
+    return;
+})
+
+//handling the /new_site_payment_details route to upload the new site payment details to the database
+app.post("/new_site_payment_details",allowSiteUsers,async(req,res)=>{
+    const site_id = req.body[`site-id`];
+    const assessment_year = req.body[`assessment-year`];
+    const payment_year = req.body[`payment-year`];
+    const receipt_no = req.body['receipt-no'];
+    const property_tax = req.body[`property-tax`];
+    const rebate = req.body.rebate;
+    const service_tax = req.body[`service-tax`];
+    const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
+    const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
+    const total_dimension = req.body[`total-dimension`];
+    const department_paid = req.body[`department-paid`];
+    const cesses = req.body.cesses;
+    const interest = req.body.interest;
+    const total_amount = req.body[`total-amount`];
+    const remarks = req.body.remarks;
+    try {
+        let sl_no = await db.query("INSERT INTO site_payment_details (site_id,assessment_year,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[site_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
+        if(req.file) {
+            const fileBuffer = req.file.buffer;
+            const fileType = req.file.mimetype;
+            const fileName = req.file.originalname;
+            //insert the image into database
+            await db.query(`INSERT INTO site_bills (sl_no,data,fileType,fileName) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3)`,[fileBuffer,fileType,fileName]);
+            }
+            console.log("new site payment details are added successfully");
+            res.redirect("/list_payment_details_in_site");
+            return;
+    } catch (error) {
+        console.log("failed to add the new site payment details");
+        console.log(error);
+        res.redirect("/new_site_payment_details");
+        return;
+    }
+});
+
+//handling the get route of generating the comprehensive report by admin
+app.get("/comprehensive_report_admin",allowAdmins,async(req,res)=>{
+    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no`);
+    const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no`);
+    const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+    const site_payment_details_in_division = site_payment_details_query_result.rows;
+    res.render("comprehensive_report_admin.ejs",{
+        institution_payment_details_in_division,
+        site_payment_details_in_division
+    });
+    return;
+});
+
+//handling the get route of generating the local report by admin
+app.get("/local_report_admin",allowAdmins,async(req,res)=>{
+    const institution_payment_details_query_result = await db.query(`SELECT khatha_or_property_no,institution_name,institution_id,name_of_khathadar,pid FROM institution_users`);
+    const site_payment_details_query_result = await db.query(`SELECT khatha_or_property_no,site_name,site_id,name_of_khathadar,pid FROM site_users`);
+    const institution_payment_details = institution_payment_details_query_result.rows;
+    const site_payment_details = site_payment_details_query_result.rows;
+    res.render("local_report_admin.ejs",{
+        institution_payment_details : institution_payment_details,
+        site_payment_details : site_payment_details
+    });
+    return;
+});
+
+//handling the get route to generate the comprehensive report by divison user
+app.get("/comprehensive_report_division",allowDivisionUsers,async(req,res)=>{
+    let div_id = req.session.user_details.division_id;
+    let division_id = div_id.toUpperCase();
+    const division_institution_payment_details_query_result = await db.query("SELECT division_users.division_id,institution_users.institution_id,institution_payment_details.* FROM division_users LEFT JOIN institution_users ON division_users.division_id = institution_users.division_id LEFT JOIN institution_payment_details ON institution_users.institution_id = institution_payment_details.institution_id WHERE division_users.division_id = $1",[division_id]);
+    const division_site_payment_details_query_result = await db.query("SELECT division_users.division_id,site_users.site_id,site_payment_details.* FROM division_users LEFT JOIN site_users ON division_users.division_id = site_users.division_id LEFT JOIN site_payment_details ON site_users.site_id = site_payment_details.site_id WHERE division_users.division_id = $1",[division_id]);
+    const division_institution_payment_details = division_institution_payment_details_query_result.rows;
+    const division_site_payment_details = division_site_payment_details_query_result.rows;
+    res.render("comprehensive_report_division.ejs",{
+        division_institution_payment_details : division_institution_payment_details,
+        division_site_payment_details : division_site_payment_details
+    });
+    return;
+});
+
+
+//handling the get route to generate the local report by division user
+app.get("/local_report_division",allowDivisionUsers,async(req,res)=>{
+    let div_id = req.session.user_details.division_id;
+    let division_id = div_id.toUpperCase();
+    const division_institution_payment_details_query_result = await db.query("SELECT division_users.division_id,institution_users.institution_id,institution_users.institution_name,institution_users.khatha_or_property_no,institution_users.name_of_khathadar,institution_users.pid FROM division_users LEFT JOIN institution_users ON division_users.division_id = institution_users.division_id WHERE division_users.division_id = $1",[division_id]);
+    const division_site_payment_details_query_result = await db.query("SELECT division_users.division_id,site_users.site_id,site_users.site_name,site_users.khatha_or_property_no,site_users.name_of_khathadar,site_users.pid FROM division_users LEFT JOIN site_users ON division_users.division_id = site_users.division_id WHERE division_users.division_id = $1",[division_id]);
+    const division_institution_payment_details = division_institution_payment_details_query_result.rows;
+    const division_site_payment_details = division_site_payment_details_query_result.rows;
+    res.render("local_report_division.ejs",{
+        division_institution_payment_details : division_institution_payment_details,
+        division_site_payment_details : division_site_payment_details
+    });
+    return;
+});
+
+//handling the get route to generate the comprehensive report for institution user
+app.get("/comprehensive_report_institution",allowInstitutionUsers,async(req,res)=>{
+    let ins_id = req.session.user_details.institution_id;
+    let institution_id = ins_id.toUpperCase();
+    const institution_report_query_result = await db.query("SELECT institution_users.institution_id,institution_payment_details.* FROM institution_users LEFT JOIN institution_payment_details ON institution_users.institution_id = institution_payment_details.institution_id WHERE institution_users.institution_id=$1",[institution_id]);
+    const comprehensive_institution_report = institution_report_query_result.rows;
+    res.render("comprehensive_report_institution.ejs",{
+        comprehensive_institution_report : comprehensive_institution_report,
+    });
+    return;
+});
+
+//handling the get route to generate the local report for the institution user
+app.get("/local_report_institution",allowInstitutionUsers,async(req,res)=>{
+    let ins_id = req.session.user_details.institution_id;
+    let institution_id = ins_id.toUpperCase();
+    const local_instituion_report_query_result = await db.query(" SELECT institution_id,institution_name,khatha_or_property_no,name_of_khathadar,pid FROM institution_users WHERE institution_id=$1",[institution_id]);
+    const local_institution_report = local_instituion_report_query_result.rows;
+    res.render("local_report_institution.ejs",{
+        local_institution_report : local_institution_report,
+    });
+    return;
+});
+
+//handling the get route to generate the comprehensive report for the site user
+app.get("/comprehensive_report_site",allowSiteUsers,async(req,res)=>{
+    let s_id = req.session.user_details.site_id;
+    let site_id = s_id.toUpperCase();
+    const comprehensive_site_report_query_result = await db.query("SELECT site_users.site_id,site_payment_details.* FROM site_users LEFT JOIN site_payment_details ON site_users.site_id = site_payment_details.site_id WHERE site_users.site_id=$1",[site_id]);
+    const comprehensive_site_report = comprehensive_site_report_query_result.rows;
+    res.render("comprehensive_report_site.ejs",{
+        comprehensive_site_report : comprehensive_site_report,
+    });
+    return;
+});
+
+//handling the get route to generate the local report for the site user
+app.get("/local_report_site",allowSiteUsers,async(req,res)=>{
+    let s_id = req.session.user_details.site_id;
+    let site_id = s_id.toUpperCase();
+    const local_site_report_query_result = await db.query("SELECT site_id,site_name,khatha_or_property_no,name_of_khathadar,pid FROM site_users WHERE site_id=$1",[site_id]);
+    const local_site_report = local_site_report_query_result.rows;
+    res.render("local_report_site.ejs",{
+        local_site_report : local_site_report,
+    })
+    return;
+});
 
 app.listen(port,()=>{
     console.log(`server is listening at the port ${port}`);
