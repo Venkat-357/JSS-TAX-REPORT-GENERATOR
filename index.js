@@ -134,20 +134,48 @@ app.get("/list_all_site_users", allowAdmins, async(req,res)=>{
     return;
 });
 
+let choosed_year = 0;
+//handling the get route to get the current year choosed by the admin
+app.get("/choosed_year_admin",allowAdmins,(req,res)=>{
+    res.render("choose_year_admin.ejs");
+    return;
+});
+
+app.post("/choosed_year_admin",allowAdmins,async(req,res)=>{
+    choosed_year = req.body[`choosed-year`];
+    res.redirect("/list_all_payment_details");
+    return;
+});
+
 // Getting a list of all payment details for viewing by admins
 app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
     // UNTESTED
     // TODO: Need to show division details by joining that table here too
     // NOTE: LEFT JOIN TO DISPLAY EVEN IF THE BILL IS NOT UPLOADED
-    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no`);
-    const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no`);
-    const institution_payment_details_in_division = institution_payment_details_query_result.rows;
-    const site_payment_details_in_division = site_payment_details_query_result.rows;
-    res.render("list_all_payment_details.ejs",{
-        institution_payment_details_in_division,
-        site_payment_details_in_division
-    });
-    return;
+    //dispay the payment details if and only if the current year details are provided else display all the details
+    if(!choosed_year) {
+        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no");
+        const site_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no");
+        const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+        const site_payment_details_in_division = site_payment_details_query_result.rows;
+        res.render("list_all_payment_details.ejs",{
+            institution_payment_details_in_division : institution_payment_details_in_division,
+            site_payment_details_in_division : site_payment_details_in_division,
+            choosed_year : choosed_year,
+        });
+        return;
+    } else {
+        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.payment_year = $1",[choosed_year]);
+        const site_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_payment_details.payment_year = $1",[choosed_year]);
+        const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+        const site_payment_details_in_division = site_payment_details_query_result.rows;
+        res.render("list_all_payment_details.ejs",{
+            institution_payment_details_in_division : institution_payment_details_in_division,
+            site_payment_details_in_division : site_payment_details_in_division,
+            choosed_year : choosed_year,
+        });
+        return;
+    }
 });
 
 // Creating a new divison/user by admins
@@ -242,19 +270,44 @@ app.get("/list_site_users_in_division", allowDivisionUsers, async(req,res) => {
     return;
 });
 
-// Getting a list of all payment details under a division for viewing by a division user
-app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) => {
-    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
-    const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
-    const institution_payment_details_in_division = institution_payment_details_query_result.rows;
-    const site_payment_details_in_division = site_payment_details_query_result.rows;
-    res.render("list_payment_details_in_division.ejs",{
-        institution_payment_details_in_division,
-        site_payment_details_in_division
-    });
+//handling the get route to get the current year choosed by the division user
+app.get("/choosed_year_division",allowDivisionUsers,(req,res)=>{
+    res.render("choose_year_division.ejs");
     return;
 });
 
+app.post("/choosed_year_division",allowDivisionUsers,async(req,res)=>{
+    choosed_year = req.body[`choosed-year`];
+    res.redirect("/list_payment_details_in_division");
+    return;
+});
+
+// Getting a list of all payment details under a division for viewing by a division user
+app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) => {
+    if(!choosed_year) {
+        const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
+        const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
+        const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+        const site_payment_details_in_division = site_payment_details_query_result.rows;
+        res.render("list_payment_details_in_division.ejs",{
+            institution_payment_details_in_division,
+            site_payment_details_in_division,
+            choosed_year,
+        });
+        return;
+    } else {
+        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = $1 AND institution_payment_details.payment_year=$2",[req.session.user_details.division_id,choosed_year]);
+        const site_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = $1 AND site_payment_details.payment_year=$2",[req.session.user_details.division_id,choosed_year]);
+        const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+        const site_payment_details_in_division = site_payment_details_query_result.rows;
+        res.render("list_payment_details_in_division.ejs",{
+            institution_payment_details_in_division,
+            site_payment_details_in_division,
+            choosed_year,
+        });
+        return;
+    }
+});
 
 // Create new institution users by division users
 // NEEDS MORE RIGOOROUS TESTING
@@ -415,14 +468,37 @@ app.get("/institution",allowInstitutionUsers,(req,res)=>{
     return;
 });
 
+//handling the get route to get the current year choosed by the institution user
+app.get("/choosed_year_institution",allowInstitutionUsers,(req,res)=>{
+    res.render("choose_year_institution.ejs");
+    return;
+});
+
+app.post("/choosed_year_institution",allowInstitutionUsers,async(req,res)=>{
+    choosed_year = req.body[`choosed-year`];
+    res.redirect("/list_payment_details_in_institution");
+    return;
+});
+
 //handling the /list_payment_details_in_institution route to display all the institution payment details  
 app.get("/list_payment_details_in_institution",allowInstitutionUsers,async(req,res)=>{
-    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = '${req.session.user_details.institution_id}'`);
-    const information = institution_payment_details_query_result.rows;
-    res.render("list_payment_details_in_institution.ejs",{
-        information : information,
-    });
-    return;
+    if(!choosed_year) {
+        const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = '${req.session.user_details.institution_id}'`);
+        const information = institution_payment_details_query_result.rows;
+        res.render("list_payment_details_in_institution.ejs",{
+            information : information,
+            choosed_year : choosed_year,
+        });
+        return;
+    } else {
+        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,choosed_year]);
+        const information = institution_payment_details_query_result.rows;
+        res.render("list_payment_details_in_institution.ejs",{
+            information : information,
+            choosed_year : choosed_year,
+        });
+        return;
+    }
 });
 
 //handling the /new_institution_payment_details route and displaying the page to add new institution users
@@ -481,14 +557,37 @@ app.get("/site",allowSiteUsers,allowSiteUsers,(req,res)=>{
     return;
 });
 
+//handling the get route to get the current year choosed by the site user
+app.get("/choosed_year_site",allowSiteUsers,(req,res)=>{
+    res.render("choose_year_site.ejs");
+    return;
+});
+
+app.post("/choosed_year_site",allowSiteUsers,async(req,res)=>{
+    choosed_year = req.body[`choosed-year`];
+    res.redirect("/list_payment_details_in_site");
+    return;
+});
+
 //handling the /list_payment_details_in_site route to display all the site payment details
 app.get("/list_payment_details_in_site",allowSiteUsers,async(req,res)=>{
-    const institution_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = '${req.session.user_details.site_id}'`);
-    const information = institution_payment_details_query_result.rows;
-    res.render("list_payment_details_in_site.ejs",{
-        information : information,
-    });
-    return;
+    if(!choosed_year) {
+        const institution_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = '${req.session.user_details.site_id}'`);
+        const information = institution_payment_details_query_result.rows;
+        res.render("list_payment_details_in_site.ejs",{
+            information : information,
+            choosed_year : choosed_year,
+        });
+        return;
+    } else {
+        const institution_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = $1 AND site_payment_details.payment_year = $2",[req.session.user_details.site_id,choosed_year]);
+        const information = institution_payment_details_query_result.rows;
+        res.render("list_payment_details_in_site.ejs",{
+            information : information,
+            choosed_year : choosed_year,
+        });
+        return;
+    }
 });
 
 //handling the /new_site_payment_details route to display the page to add new site payment details

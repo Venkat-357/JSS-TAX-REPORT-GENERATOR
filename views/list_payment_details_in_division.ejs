@@ -1,5 +1,9 @@
 <%- include('partials/header'); -%>
-<p>Payment details for the year:</p>
+<% if(!choosed_year) { %>
+    <p>The Payment Details for all the years :</p>
+<% } else { %>
+    <p>The Payment Details for the year :<%=choosed_year%></p>
+<% } %>
 <h3>Institution Payment Details</h3>
 <div class="overflow-scroll">
 <table>
