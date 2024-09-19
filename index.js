@@ -102,6 +102,11 @@ app.get("/admin", allowAdmins, (req,res)=>{
     return;
 });
 
+app.get('/go_back', allowLoggedIn, (req,res)=>{
+    res.redirect("/home");
+    return;
+});
+
 // Getting a list of all division users for viewing by admins
 app.get("/list_all_division_users", allowAdmins, async(req,res) => {
     const queryResult = await db.query("SELECT * FROM division_users");
