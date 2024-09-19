@@ -59,7 +59,7 @@ export const login = async(req,res,db) => {
             req.session.isSiteUser = false;
             req.session.user_details = {
                 institution_id : user.institution_id,
-                institution : user.institution,
+                institution : user.institution_name,
                 email : user.email,
             };
             res.redirect("/institution");
@@ -81,7 +81,7 @@ export const login = async(req,res,db) => {
             req.session.isSiteUser = true;
             req.session.user_details = {
                 site_id : user.site_id,
-                site : user.site,
+                site : user.site_name,
                 email : user.email,
             };
             res.redirect("/site");

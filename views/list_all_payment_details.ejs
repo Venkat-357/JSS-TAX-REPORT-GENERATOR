@@ -1,9 +1,21 @@
 <%- include('partials/header'); -%>
-<% if(!choosed_year) { %>
-    <p>The Payment Details for all the years :</p>
+<% if(!selected_year) { %>
+    <h3>The Payment Details for all years:</h3>
 <% } else { %>
-    <p>The Payment Details for the year :<%=choosed_year%></p>
+    <h3>The Payment Details for the year :<%=selected_year%></h3>
 <% } %>
+<form action="/list_all_payment_details" method="GET">
+    <label for="selected_year">Select a Payment Year</label>
+    <select id="selected_year" name="selected_year">
+        <option value="">All years</option>
+        <% if(!selected_year) { %>
+            <option value="" selected disabled>Select a Payment Year</option>
+        <% } else { %>
+            <option value="<%= selected_year %>" selected>Selected: <%= selected_year %></option>
+        <% } %>
+    </select>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
 <h3>Institution Payment Details</h3>
 <div class="overflow-scroll">
 <table>
@@ -92,4 +104,15 @@
 
 </table>
 </div>
+<script>
+    // This script will populate the dropdown with years from 2010 to the current year
+    const selectedYear = document.getElementById('selected_year');
+    const currentYear = new Date().getFullYear();
+    for(let i = currentYear; i >= 2010; i--) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        selectedYear.appendChild(option);
+    };
+</script>
 <%- include('partials/footer'); -%>

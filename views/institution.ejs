@@ -1,7 +1,7 @@
 <%- include(`partials/header`) -%>
 <div class="form-container">
-    <h2>Welcome institution, <%- user_details?.institution -%></h2>
-    <a class="btn btn-primary" href="/choosed_year_institution">List Payment Details</a>
+    <h2>Welcome institution, <%= user_details?.institution %></h2>
+    <a class="btn btn-primary" href="/list_payment_details_in_institution">List Payment Details</a>
     <a class="btn btn-primary" href="/comprehensive_report_institution">Generate Comprehensive Report</a>
     <a class="btn btn-primary" href="/local_report_institution">Generate Local Report</a>
 </div>
