@@ -1,89 +1,102 @@
 <%- include(`partials/header`); -%>
-<form action="/new_site_payment_details" method="post">
+<form action="/new_site_payment_details" method="post" enctype="multipart/form-data" class="form-container">
     <div class="form-group">
-    <label for="site-id">SITE ID :</label>
-    <input type="text" id="site-id" name="site-id"
-    <% if(site_id) { %>
-        value="<%= site_id %>"
-        readonly
-        class="gray-out"
-    <% } %>
-    >
+        <label for="site-id">SITE ID :</label>
+        <input type="text" id="site-id" name="site-id"
+        <% if(site_id) { %>
+            value="<%= site_id %>"
+            readonly
+            class="gray-out"
+        <% } %>
+        >
     </div> 
 
     <div class="form-group">
-    <label for="assessment-year">ASSESSMENT YEAR :</label>
-    <input type="number" id="assessment-year" name="assessment-year" required>
+        <label for="assessment-year">ASSESSMENT YEAR :</label>
+        <select id="assessment-year" name="assessment-year" required>
+            <option value="" selected disabled>Select an Assessment Year</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="payment-year">PAYMENT YEAR :</label>
+        <select id="payment-year" name="payment-year" required>
+            <option value="" selected disabled>Select a Payment Year</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="receipt-no">RECEIPT NUMBER OR DATE :</label>
+        <input type="text" id="receipt-no" name="receipt-no" required>
+    </div>
+
+
+    <div class="form-group">
+        <label for="property-tax">PROPERTY TAX :</label>
+        <input type="number" id="property-tax" name="property-tax" required>
     </div>
 
     <div class="form-group">
-    <label for="payment-year">PAYMENT YEAR :</label>
-    <input type="number" id="payment-year" name="payment-year" required>
+        <label for="rebate">REBATE :</label>
+        <input type="number" id="rebate" name="rebate" required>
     </div>
 
     <div class="form-group">
-    <label for="receipt-no">RECEIPT NUMBER OR DATE :</label>
-    <input type="number" id="receipt-no" name="receipt-no" required>
+        <label for="service-tax">SERVICE TAX :</label>
+        <input type="number" id="service-tax" name="service-tax" required>
     </div>
 
     <div class="form-group">
-    <label for="property-tax">PROPERTY TAX :</label>
-    <input type="number" id="property-tax" name="property-tax" required>
+        <label for="dimension-of-vacant-area-in-sqft">DIMENSION OF VACANT AREA IN SQFT :</label>
+        <input type="number" id="dimension-of-vacant-area-in-sqft" name="dimension-of-vacant-area-in-sqft" required>
     </div>
 
     <div class="form-group">
-    <label for="rebate">REBATE :</label>
-    <input type="number" id="rebate" name="rebate" required>
+        <label for="dimension-of-building-area-in-sqft">DIMENSION OF BUILDING AREA IN SQFT :</label>
+        <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" required>
     </div>
 
     <div class="form-group">
-    <label for="service-tax">SERVICE TAX :</label>
-    <input type="number" id="service-tax" name="service-tax" required>
+        <label for="total-dimension">TOTAL DIMENSION IN SQFT :</label>
+        <input type="number" id="total-dimension" name="total-dimension" required>
     </div>
 
     <div class="form-group">
-    <label for="dimension-of-vacant-area-in-sqft">DIMENSION OF VACANT AREA IN SQFT :</label>
-    <input type="number" id="dimension-of-vacant-area-in-sqft" name="dimension-of-vacant-area-in-sqft" required>
+        <label for="department-paid">TO WHICH DEPARTMENT PAID :</label>
+        <select name="department-paid" id="department-paid">
+            <option value="" selected disabled>Select a Department</option>
+            <option value="BBMP">BBMP</option>
+            <option value="MCC">MCC</option>
+            <option value="KHB">KHB</option>
+            <option value="KIADB">KIADB</option>
+            <option value="Nagara-Sabha">Nagara Sabha</option>
+            <option value="Grama-Panchayat">Grama Panchayat</option>
+        </select>
     </div>
 
     <div class="form-group">
-    <label for="dimension-of-building-area-in-sqft">DIMENSION OF BUILDING AREA IN SQFT :</label>
-    <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" required>
+        <label for="cesses">CESSES :</label>
+        <input type="number" id="cesses" name="cesses" required>
     </div>
 
     <div class="form-group">
-    <label for="total-dimension">TOTAL DIMENSION IN SQFT :</label>
-    <input type="number" id="total-dimension" name="total-dimension" required>
+        <label for="interest">INTEREST :</label>
+        <input type="number" id="interest" name="interest" required>
     </div>
 
     <div class="form-group">
-    <label for="department-paid">TO WHICH DEPARTMENT PAID :</label>
-    <input type="text" id="department-paid" name="department-paid" required>
+        <label for="total-amount">TOTAL AMOUNT</label>
+        <input type="number" id="total-amount" name="total-amount" required>
     </div>
 
     <div class="form-group">
-    <label for="cesses">CESSES :</label>
-    <input type="number" id="cesses" name="cesses" required>
-    </div>
-
-    <div class="form-group">
-    <label for="interest">INTEREST :</label>
-    <input type="number" id="interest" name="interest" required>
-    </div>
-
-    <div class="form-group">
-    <label for="total-amount">TOTAL AMOUNT</label>
-    <input type="number" id="total-amount" name="total-amount" required>
-    </div>
-
-    <div class="form-group">
-    <label for="remarks">REMARKS</label>
-    <input type="text" id="remarks" name="remarks" required>
+        <label for="remarks">REMARKS</label>
+        <input type="text" id="remarks" name="remarks" required>
     </div>    
 
     <div class="form-group">
-    <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif):</label>
-    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif">
+        <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif):</label>
+        <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif">
     </div>
     
     <button type="submit">Submit</button>

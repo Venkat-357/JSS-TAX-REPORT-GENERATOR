@@ -95,7 +95,6 @@ const createTablesIfNotExists = (db) => {
     total_amount integer NOT NULL,
     remarks character varying(10) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT institution_payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
-    CONSTRAINT payment_details_institution_id_key UNIQUE (institution_id),
     CONSTRAINT payment_details_institution_id_fkey FOREIGN KEY (institution_id)
         REFERENCES public.institution_users (institution_id) MATCH SIMPLE
         ON UPDATE CASCADE
@@ -119,7 +118,6 @@ const createTablesIfNotExists = (db) => {
             total_amount integer NOT NULL,
             remarks character varying(10) COLLATE pg_catalog."default" NOT NULL,
             CONSTRAINT site_payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
-            CONSTRAINT payment_details_site_id_key UNIQUE (site_id),
             CONSTRAINT payment_details_site_id_fkey FOREIGN KEY (site_id)
                 REFERENCES public.site_users (site_id) MATCH SIMPLE
                 ON UPDATE CASCADE

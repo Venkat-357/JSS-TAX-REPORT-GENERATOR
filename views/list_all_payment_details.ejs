@@ -35,7 +35,7 @@
         <th>INTEREST</th>
         <th>TOTAL AMOUNT</th>
         <th>REMARKS</th>
-        <th>BILL</th>
+        <th style="text-align: center;">OPTIONS</th>
     </tr>
     <% institution_payment_details_in_division.forEach((entry)=>{ %>
         <tr>
@@ -54,6 +54,15 @@
             <td><%=entry.interest%></td>
             <td><%=entry.total_amount%></td>
             <td><%=entry.remarks%></td>
+            <% if (entry.bill_sl_no) { %>
+                <td>
+                    <a class="btn btn-info" href="/view_image/<%=entry.sl_no%>">View Bill</a>
+                </td>
+            <% } else { %>
+                <td>
+                    <a class="btn btn-warning" disabled>No Bill Uploaded</a>
+                </td>
+            <% } %>
         </tr>
 
     <% }) %>
@@ -79,7 +88,7 @@
         <th>INTEREST</th>
         <th>TOTAL AMOUNT</th>
         <th>REMARKS</th>
-        <th>BILL</th>
+        <th style="text-align: center;">OPTIONS</th>
     </tr>
     <% site_payment_details_in_division.forEach((entry)=>{ %>
         <tr>
@@ -98,6 +107,15 @@
             <td><%=entry.interest%></td>
             <td><%=entry.total_amount%></td>
             <td><%=entry.remarks%></td>
+            <% if (entry.bill_sl_no) { %>
+                <td>
+                    <a class="btn btn-info" href="/view_image?sl_no=<%=entry.sl_no%>">View Bill</a>
+                </td>
+            <% } else { %>
+                <td>
+                    <a class="btn btn-warning" disabled>No Bill Uploaded</a>
+                </td>
+            <% } %>
         </tr>
 
     <% }) %>
