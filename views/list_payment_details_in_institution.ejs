@@ -35,7 +35,7 @@
         <th>INTEREST</th>
         <th>TOTAL AMOUNT</th>
         <th>REMARKS</th>
-        <th>BILL</th>
+        <th colspan="3" style="text-align: center;">OPTIONS</th>
     </tr>
     <% information.forEach((entry)=>{ %>
         <tr>
@@ -54,6 +54,21 @@
             <td><%=entry.interest%></td>
             <td><%=entry.total_amount%></td>
             <td><%=entry.remarks%></td>
+            <% if (entry.bill_sl_no) { %>
+                <td>
+                    <a class="btn btn-info" href="/view_image/<%=entry.sl_no%>">View Bill</a>
+                </td>
+            <% } else { %>
+                <td>
+                    <a class="btn btn-warning" disabled>No Bill Uploaded</a>
+                </td>
+            <% } %>
+            <td>
+                <a class="btn btn-secondary" href="/modify_payment_details?sl_no=<%=entry.sl_no%>">Modify</a>
+            </td>
+            <td>
+                <a class="btn btn-danger" href="/delete_payment_details?sl_no=<%=entry.sl_no%>">Delete</a>
+            </td>
         </tr>
 
     <% }) %>

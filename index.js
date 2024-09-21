@@ -142,13 +142,14 @@ app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
     const selected_year = req.query?.selected_year;
     if (selected_year && isNaN(selected_year)) {
         res.send("Invalid year")
+        return;
     }
     // TODO: Need to show division details by joining that table here too
     // NOTE: LEFT JOIN TO DISPLAY EVEN IF THE BILL IS NOT UPLOADED
     //dispay the payment details if and only if the current year details are provided else display all the details
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no");
-        const site_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no");
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no");
+        const site_payment_details_query_result = await db.query("SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no");
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         const site_payment_details_in_division = site_payment_details_query_result.rows;
         res.render("list_all_payment_details.ejs",{
@@ -158,8 +159,8 @@ app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.payment_year = $1",[selected_year]);
-        const site_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_payment_details.payment_year = $1",[selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.payment_year = $1",[selected_year]);
+        const site_payment_details_query_result = await db.query("SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_payment_details.payment_year = $1",[selected_year]);
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         const site_payment_details_in_division = site_payment_details_query_result.rows;
         res.render("list_all_payment_details.ejs",{
@@ -269,10 +270,11 @@ app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) 
     const selected_year = req.query?.selected_year;
     if (selected_year && isNaN(selected_year)) {
         res.send("Invalid year")
+        return;
     }
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
-        const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
+        const institution_payment_details_query_result = await db.query(`SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
+        const site_payment_details_query_result = await db.query(`SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         const site_payment_details_in_division = site_payment_details_query_result.rows;
         res.render("list_payment_details_in_division.ejs",{
@@ -282,8 +284,8 @@ app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) 
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = $1 AND institution_payment_details.payment_year=$2",[req.session.user_details.division_id,selected_year]);
-        const site_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = $1 AND site_payment_details.payment_year=$2",[req.session.user_details.division_id,selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = $1 AND institution_payment_details.payment_year=$2",[req.session.user_details.division_id,selected_year]);
+        const site_payment_details_query_result = await db.query("SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = $1 AND site_payment_details.payment_year=$2",[req.session.user_details.division_id,selected_year]);
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         const site_payment_details_in_division = site_payment_details_query_result.rows;
         res.render("list_payment_details_in_division.ejs",{
@@ -459,9 +461,10 @@ app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req
     const selected_year = req.query?.selected_year;
     if (selected_year && isNaN(selected_year)) {
         res.send("Invalid year")
+        return;
     }
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = '${req.session.user_details.institution_id}'`);
+        const institution_payment_details_query_result = await db.query(`SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no  FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = '${req.session.user_details.institution_id}'`);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_institution.ejs",{
             information : information,
@@ -469,7 +472,7 @@ app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.* AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_institution.ejs",{
             information : information,
@@ -510,13 +513,8 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
             const fileName = req.file.originalname;
-            const timeStamp = new Date().getTime();
-            console.log(fileBuffer);
-            console.log(fileType);
-            console.log(fileName);
-            console.log(timeStamp);
             //insert the image into database
-            await db.query(`INSERT INTO institution_bills (sl_no,fileName,filetype,data,uploaded_at) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3,$4)`,[fileBuffer,fileType,fileName,timeStamp]);
+            await db.query(`INSERT INTO institution_bills (sl_no,fileName,filetype,data) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3)`,[fileName,fileType,fileBuffer]);
             }
             console.log("new institution payment details are added successfully");
             res.redirect("/list_payment_details_in_institution");
@@ -544,7 +542,7 @@ app.get("/list_payment_details_in_site", allowSiteUsers, async(req,res)=>{
         return;
     }
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = '${req.session.user_details.site_id}'`);
+        const institution_payment_details_query_result = await db.query(`SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = '${req.session.user_details.site_id}'`);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_site.ejs",{
             information : information,
@@ -552,7 +550,7 @@ app.get("/list_payment_details_in_site", allowSiteUsers, async(req,res)=>{
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = $1 AND site_payment_details.payment_year = $2",[req.session.user_details.site_id,selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = $1 AND site_payment_details.payment_year = $2",[req.session.user_details.site_id,selected_year]);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_site.ejs",{
             information : information,
@@ -571,7 +569,7 @@ app.get("/new_site_payment_details",allowSiteUsers,(req,res)=>{
 })
 
 //handling the /new_site_payment_details route to upload the new site payment details to the database
-app.post("/new_site_payment_details",allowSiteUsers,async(req,res)=>{
+app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), async(req,res)=>{
     const site_id = req.body[`site-id`];
     const assessment_year = req.body[`assessment-year`];
     const payment_year = req.body[`payment-year`];
@@ -603,6 +601,69 @@ app.post("/new_site_payment_details",allowSiteUsers,async(req,res)=>{
         console.log("failed to add the new site payment details");
         console.log(error);
         res.redirect("/new_site_payment_details");
+        return;
+    }
+});
+
+// View images
+app.get("/view_image/:sl_no", allowLoggedIn, async(req,res)=>{
+    const sl_no = req.params.sl_no;
+    if (!sl_no || isNaN(sl_no)) {
+        res.send("No image found");
+        return;
+    }
+    // Find if the image in institution_bills or site_bills
+    const query_result = await db.query("SELECT * FROM institution_bills WHERE sl_no = $1",[sl_no]);
+    const query_result_site = await db.query("SELECT * FROM site_bills WHERE sl_no = $1",[sl_no]);
+    if (query_result.rows.length === 0 && query_result_site.rows.length === 0) {
+        res.send("No image found");
+        return;
+    }
+    // Check if institution user is authorized to view the image
+    if (!req.session.isAdmin && !req.session.isDivisionUser && req.session.isInstitutionUser && query_result.rows.length !== 0) {
+        const check_owner = await db.query("SELECT institution_id FROM institution_payment_details WHERE sl_no = $1",[sl_no]);
+        if (check_owner.rows[0].institution_id !== req.session.user_details?.institution_id) {
+            res.send("You are not authorized to view this image");
+            return;
+        }
+    }
+    // Check if site user is authorized to view the image
+    if (!req.session.isAdmin && !req.session.isDivisionUser && req.session.isSiteUser &&query_result_site.rows.length !== 0) {
+        const check_owner = await db.query("SELECT site_id FROM site_payment_details WHERE sl_no = $1",[sl_no]);
+        if (check_owner.rows[0].site_id !== req.session.user_details?.site_id) {
+            res.send("You are not authorized to view this image");
+            return;
+        }
+    }
+    // Check if division user is authorized to view the image for institution
+    if (!req.session.isAdmin && req.session.isDivisionUser && query_result.rows.length !== 0) {
+        const check_owner = await db.query("SELECT division_id FROM institution_users JOIN institution_payment_details ON institution_users.institution_id=institution_payment_details.institution_id WHERE sl_no = $1",[sl_no]);
+        if (check_owner.rows[0].division_id !== req.session.user_details?.division_id) {
+            res.send("You are not authorized to view this image");
+            return;
+        }
+    }
+    // Check if division user is authorized to view the image for site
+    if (!req.session.isAdmin && req.session.isDivisionUser && query_result_site.rows.length !== 0) {
+        const check_owner = await db.query("SELECT division_id FROM site_users JOIN site_payment_details ON site_users.site_id=site_payment_details.site_id WHERE sl_no = $1",[sl_no]);
+        if (check_owner.rows[0].division_id !== req.session.user_details?.division_id) {
+            res.send("You are not authorized to view this image");
+            return;
+        }
+    }
+
+    // Send the image
+    if (query_result.rows.length === 0) {
+        // This is a site image
+        const image = query_result_site.rows[0];
+        res.setHeader('Content-Type', image.filetype);
+        res.send(image.data);
+        return;
+    } else {
+        // This is an institution image
+        const image = query_result.rows[0];
+        res.setHeader('Content-Type', image.filetype);
+        res.send(image.data);
         return;
     }
 });
