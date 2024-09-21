@@ -227,11 +227,11 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
     try {
         await db.query(`INSERT INTO division_users (admin_id,division_id,division,email,password,phone_number) VALUES($1,$2,$3,$4,$5,$6)`,[admin_id,division_id,division,email,password,phone_number]);
         console.log("new division user is added successfully");
-        res.redirect("/admin");
+        res.redirect("/list_all_division_users");
         return;
     } catch (error) {
         console.log("failed to add a new division user");
-        res.send(error)
+        res.redirect("/create_new_division");
         return;
     }
 });
@@ -541,6 +541,7 @@ app.get("/list_payment_details_in_site", allowSiteUsers, async(req,res)=>{
     const selected_year = req.query?.selected_year;
     if (selected_year && isNaN(selected_year)) {
         res.send("Invalid year")
+        return;
     }
     if(!selected_year) {
         const institution_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = '${req.session.user_details.site_id}'`);

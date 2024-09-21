@@ -57,8 +57,18 @@
     </div>
 
     <div class="form-group">
-    <label for="department-paid">TO WHICH DEPARTMENT PAID :</label>
-    <input type="text" id="department-paid" name="department-paid" required>
+        <label for="department">To Which Department Paid:</label>
+        <select name="department" id="department">
+            <option value="BBMP">BBMP</option>
+            <option value="MCC">MCC</option>
+            <option value="KHB">KHB</option>
+            <option value="KIADB">KIADB</option>
+            <option value="Nagara-Sabha">Nagara Sabha</option>
+            <option value="Grama-Panchayat">Grama Panchayat</option>
+            <option value="Pattana-Panchayat">Pattana Panchayat</option>
+            <option value="Purasabha">Purasabha</option>
+            <option value="MUDA">MUDA</option>
+        </select>
     </div>
 
     <div class="form-group">
@@ -83,7 +93,7 @@
 
     <div class="form-group">
     <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif):</label>
-    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif">
+    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif" required>
     </div>
     
     <button type="submit">Submit</button>
