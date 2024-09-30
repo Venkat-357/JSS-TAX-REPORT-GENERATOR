@@ -117,6 +117,93 @@ app.get("/list_all_division_users", allowAdmins, async(req,res) => {
     return;
 });
 
+//handling the modify option to modify the division users details by the admin
+app.get("/modify", allowAdmins, async(req,res)=>{
+    let division_identification = req.query['division_id'];
+    if(!division_identification) {
+        res.send("The page you are looking for is not available");
+        return;
+    }
+    const query_result = await db.query("SELECT * FROM division_users WHERE division_id=$1",[division_identification]);
+    const retrieved_info = query_result.rows[0];
+    console.log(retrieved_info);
+    if(!retrieved_info) {
+        res.send("The data you are looking for is not available");
+        return;
+    }
+    res.render("modify_division_users.ejs",{
+        retrieved_info : retrieved_info,
+    });
+    return;
+});
+
+app.post("/modify_division_users",allowAdmins, async(req,res)=>{
+    const division_id = req.body['division-id'];
+    const division = req.body.division;
+    const email = req.body.email;
+    const password = req.body.password;
+    const phone_number = req.body.phone;
+    const admin_id = req.session.user_details.admin_id;
+
+    console.log(division_id);
+    console.log(division);
+    console.log(email);
+    console.log(password);
+    console.log(phone_number);
+
+    // Validate the input fields
+    /*if (!validateEmail(email)) {
+        res.send("Invalid email");
+        return;
+    }*/
+    // if (!validatePassword(password)) {
+    //     res.send("Invalid password");
+    //     return;
+    // }
+    console.log(phone_number);
+    if (!phone_number || phone_number.length !== 10 || !/^\d+$/.test(phone_number)) {
+        res.send("Invalid phone number");
+        return;
+    }
+
+    if(isNaN(admin_id)) {
+        res.send("Invalid admin id");
+        return;
+    }
+    // Check if the division id, email, and phone number already exist
+    let query_result = await db.query(`SELECT * FROM division_users WHERE division_id = $1`,[division_id]);
+    if(query_result.rows.length !== 0) {
+        res.send("Division id already exists");
+        return;
+    }
+    // We have to make sure that the email is unique across all the users, because login depends on the email
+    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+        UNION SELECT email FROM admins WHERE email = '${email}'
+        UNION SELECT email FROM institution_users WHERE email = '${email}'
+        UNION SELECT email FROM site_users WHERE email = '${email}'`);
+    if(query_result.rows.length !== 0) {
+        res.send("Email already exists");
+        return;
+    }
+    query_result = await db.query(`SELECT * FROM division_users WHERE phone_number = $1 AND division_id != $2`,[phone_number,division_id]);
+    if(query_result.rows.length !== 0) {
+        res.send("Phone number already exists");
+        return;
+    }
+
+    try {
+        await db.query(`UPDATE division_users SET admin_id=$1,division_id=$2,division=$3,email=$4,password=$5,phone_number=$6 WHERE division_id=$6`,[admin_id,division_id,division,email,password,phone_number,division_id]);
+        console.log("division user details are updated successfully");
+        res.redirect("/list_all_division_users");
+        return;
+    } catch (error) {
+        console.log("failed to update division user details");
+        res.redirect("/modify_division_users");
+        return;
+    }
+
+});
+
 // Getting a list of all institution users for viewing by admins
 app.get("/list_all_institution_users", allowAdmins, async(req,res) => {
     const query_result = await db.query("SELECT * FROM institution_users");

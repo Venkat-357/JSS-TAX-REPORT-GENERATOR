@@ -1,0 +1,29 @@
+<%- include(`partials/header`); -%>
+<form action="/modify_division_users" method="post" class="form-container" enctype="multipart/form-data">
+    <h3>Modify the Division User</h3>
+    <div class="form-group">
+        <label for="division-id">Division ID :</label>
+        <input type="text" id="division-id" name="division-id" value="<%= retrieved_info.division_id %>" required>
+    </div>
+    <div class="form-group">
+        <label for="division">Division Name :</label>
+        <input type="text" id="division" name="division" value="<%= retrieved_info.division %>" required>
+    </div>
+    <div class="form-group">
+        <label for="email">Set Division User's Login Email :</label>
+        <input type="email" id="email" name="email" value="<%= retrieved_info.email %>" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Set Division User's Login Password :</label>
+        <input type="password" id="password" name="password" value="<%= retrieved_info.password %>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Division User's Phone :</label>
+        <input type="tel" id="phone" name="phone" value="<%= retrieved_info.phone_number %>" required>
+    </div>
+    <div class="submit-button">
+        <button type="submit">Submit</button>
+    </div>
+</form>
+<%- include(`partials/footer`); -%>

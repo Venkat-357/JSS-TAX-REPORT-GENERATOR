@@ -16,6 +16,7 @@
         <th>KHATHA OR PROPERTY NUMBER</th>
         <th>NAME OF KHATHADAR</th>
         <th>TYPE OF BUILDING</th>
+        <th colspan="2" style="text-align: center;">OPTIONS</th>
     </tr>
     <% information.forEach((entry)=>{ %>
         <tr>
@@ -31,6 +32,12 @@
             <td><%=entry.khatha_or_property_no%></td>
             <td><%=entry.name_of_khathadar%></td>
             <td><%=entry.type_of_building%></td>
+            <td>
+                <button class="btn btn-secondary" type="submit"><a href="/modify?division_id=<%=entry.division_id%>&institution_id=<%=entry.institution_id%>">Modify</button>
+            </td>
+            <td>
+                <button class="btn btn-secondary" type="submit"><a href="/delete?division_id=<%=entry.division_id%>&institution_id=<%=entry.institution_id%>">Delete</button>
+            </td>
         </tr>
 
     <% }) %>
