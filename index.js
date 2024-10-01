@@ -4,12 +4,18 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 import dotenv from 'dotenv';
 import multer from 'multer';
+import morgan from 'morgan';
+import flash from 'connect-flash';
 dotenv.config(); // Load the environment variables from the .env file
 import { exit } from 'process';
+
+// Our custom imports
 import createTablesIfNotExists from './utils/create_tables.js';
-import {setAuthStatus} from './middleware/auth_wrap.js';
+import {setAuthStatus } from './middleware/auth_wrap.js';
+import { setFlashMessages } from './middleware/set_flash_messages.js';
 import { allowAdmins, allowAdminsAndDivisionUsers, allowLoggedIn, allowDivisionUsers, allowInstitutionUsers, allowSiteUsers } from './middleware/restrict_routes.js';
 import { validateEmail, validatePassword } from './utils/Validation.js';
+import { addFlashMessages } from './utils/add_flash_messages.js';
 
 // Basic Express app setup
 const app = express();
@@ -46,8 +52,13 @@ app.use(
         saveUninitialized: false
     })
 );
+app.use(flash());
+app.use(morgan('dev'));
 app.use(setAuthStatus);
+app.use(setFlashMessages);
 
+
+// Try to connect to the database
 try {
     db.connect();
     console.log("Connected to the database");
@@ -71,7 +82,7 @@ app.get("/login", (req,res)=>{
         res.redirect("/home");
         return;
     } else {
-        res.render("login.ejs");
+        res.render("login.ejs",addFlashMessages(req));
         return;
     }
 });
@@ -98,7 +109,7 @@ app.get("/home", allowLoggedIn, async(req,res) => {
 
 // Admin page
 app.get("/admin", allowAdmins, (req,res)=>{
-    res.render("admin.ejs");
+    res.render("admin.ejs",addFlashMessages(req));
     return;
 });
 
@@ -326,8 +337,31 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
 
 
 // Division users' dashboard page
-app.get("/division", allowDivisionUsers, (req,res) => {
-    res.render("division.ejs");
+app.get("/division", allowDivisionUsers, async(req,res) => {
+    // Get all institution and site users details who haven't made an entry into the payment details table for the current year
+    // This will help the division user to know who hasn't paid yet
+
+    // Get the current year
+    const currentYear = new Date().getFullYear();
+    // Get the division id
+    const division_id = req.session.user_details.division_id;
+    // Get the institution users who haven't paid yet
+    const institutionUsersQuery = `SELECT institution_id, khatha_or_property_no, phone_number FROM institution_users WHERE division_id = '${division_id}' AND institution_id NOT IN (SELECT institution_id FROM institution_payment_details WHERE payment_year = '${currentYear}')`;
+    // Get the site users who haven't paid yet
+    const siteUsersQuery = `SELECT site_id, khatha_or_property_no, phone_number FROM site_users WHERE division_id = '${division_id}' AND site_id NOT IN (SELECT site_id FROM site_payment_details WHERE payment_year = '${currentYear}')`;
+    // Query the database
+    const query_result = await db.query(institutionUsersQuery);
+    const institutionUsers = query_result.rows;
+    const siteUsersQueryResult = await db.query(siteUsersQuery);
+    const siteUsers = siteUsersQueryResult.rows;
+    console.log(institutionUsers);
+    console.log(siteUsers);
+    req.flash("info", `The users who haven't paid yet are displayed below, please remind them to pay for this year :${currentYear}`);
+    req.flash("warning", `Institution users who haven't paid yet:
+                        ${institutionUsers.map(user => `Institution ID: ${user.institution_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
+    req.flash("warning", `Site users who haven't paid yet:
+                        ${siteUsers.map(user => `Site ID: ${user.site_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
+    res.render("division.ejs",addFlashMessages(req));
     return;
 });
 
@@ -728,7 +762,7 @@ app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
 
 //handling the /institution route and displaying the home page of institution users
 app.get("/institution",allowInstitutionUsers,(req,res)=>{
-    res.render("institution.ejs");
+    res.render("institution.ejs",addFlashMessages(req));
     return;
 });
 
@@ -866,7 +900,7 @@ app.get("/delete_payment_details", allowInstitutionUsers, async(req,res)=>{
 
 //handling the /site route and displaying the home page of site users
 app.get("/site",allowSiteUsers,allowSiteUsers,(req,res)=>{
-    res.render("site.ejs");
+    res.render("site.ejs",addFlashMessages(req));
     return;
 });
 

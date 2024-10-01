@@ -29,3 +29,16 @@
     <% if (isLoggedIn) { %>
         <a class="btn btn-outline-primary btn-sm mt-1 mx-2" href="/go_back"> &lt; Go Back</a>
     <% } %>
+    <% if (flash_messages) { %>
+        <% for (const message_type in flash_messages) { %>
+            <% flash_messages[message_type].forEach(function(msg) { %>
+                <div class="w-50 mx-auto text-center">
+                    <div class="alert alert-<%= message_type%> alert-dismissible fade show" role="alert">
+                        <%= msg %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            <% }); %>
+        <% }; %>
+    <% } %>
+    

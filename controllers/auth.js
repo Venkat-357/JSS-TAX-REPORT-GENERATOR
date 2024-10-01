@@ -18,10 +18,12 @@ export const login = async(req,res,db) => {
                 admin_id : admin_id,
                 email : user.email
             };
+            req.flash("success", "Logged in successfully");
             res.redirect("/admin");
             return;
         } else {
-            res.send("Invalid credentials");
+            req.flash("danger", "Invalid credentials");
+            res.redirect("/login");
             return;
         }
     }
@@ -40,10 +42,12 @@ export const login = async(req,res,db) => {
                 division : user.division,
                 email : user.email,
             };
+            req.flash("success", "Logged in successfully");
             res.redirect("/division");
             return;
         } else {
-            res.send("Invalid credentials");
+            req.flash("danger", "Invalid credentials");
+            res.redirect("/login");
             return;
         }
     }
@@ -62,10 +66,12 @@ export const login = async(req,res,db) => {
                 institution : user.institution_name,
                 email : user.email,
             };
+            req.flash("success", "Logged in successfully");
             res.redirect("/institution");
             return;
         } else {
-            res.send("Invalid credentials");
+            req.flash("danger", "Invalid credentials");
+            res.redirect("/login");
             return;
         }
     }
@@ -84,14 +90,17 @@ export const login = async(req,res,db) => {
                 site : user.site_name,
                 email : user.email,
             };
+            req.flash("success", "Logged in successfully");
             res.redirect("/site");
             return;
         } else {
-            res.send("Invalid credentials");
+            req.flash("danger", "Invalid credentials");
+            res.redirect("/login");
             return;
         }
     }
-    res.send("Invalid credentials");
+    req.flash("danger", "Invalid credentials");
+    res.redirect("/login");
     return;
 }
 
