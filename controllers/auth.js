@@ -22,7 +22,7 @@ export const login = async(req,res,db) => {
             res.redirect("/admin");
             return;
         } else {
-            req.flash("error", "Invalid credentials");
+            req.flash("danger", "Invalid credentials");
             res.redirect("/login");
             return;
         }
@@ -46,7 +46,7 @@ export const login = async(req,res,db) => {
             res.redirect("/division");
             return;
         } else {
-            req.flash("error", "Invalid credentials");
+            req.flash("danger", "Invalid credentials");
             res.redirect("/login");
             return;
         }
@@ -70,7 +70,7 @@ export const login = async(req,res,db) => {
             res.redirect("/institution");
             return;
         } else {
-            req.flash("error", "Invalid credentials");
+            req.flash("danger", "Invalid credentials");
             res.redirect("/login");
             return;
         }
@@ -94,12 +94,12 @@ export const login = async(req,res,db) => {
             res.redirect("/site");
             return;
         } else {
-            req.flash("error", "Invalid credentials");
+            req.flash("danger", "Invalid credentials");
             res.redirect("/login");
             return;
         }
     }
-    req.flash("error", "Invalid credentials");
+    req.flash("danger", "Invalid credentials");
     res.redirect("/login");
     return;
 }

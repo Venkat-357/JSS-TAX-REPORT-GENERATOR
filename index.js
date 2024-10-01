@@ -82,7 +82,7 @@ app.get("/login", (req,res)=>{
         res.redirect("/home");
         return;
     } else {
-        res.render("login.ejs");
+        res.render("login.ejs",addFlashMessages(req));
         return;
     }
 });
@@ -337,7 +337,30 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
 
 
 // Division users' dashboard page
-app.get("/division", allowDivisionUsers, (req,res) => {
+app.get("/division", allowDivisionUsers, async(req,res) => {
+    // Get all institution and site users details who haven't made an entry into the payment details table for the current year
+    // This will help the division user to know who hasn't paid yet
+
+    // Get the current year
+    const currentYear = new Date().getFullYear();
+    // Get the division id
+    const division_id = req.session.user_details.division_id;
+    // Get the institution users who haven't paid yet
+    const institutionUsersQuery = `SELECT institution_id, khatha_or_property_no, phone_number FROM institution_users WHERE division_id = '${division_id}' AND institution_id NOT IN (SELECT institution_id FROM institution_payment_details WHERE payment_year = '${currentYear}')`;
+    // Get the site users who haven't paid yet
+    const siteUsersQuery = `SELECT site_id, khatha_or_property_no, phone_number FROM site_users WHERE division_id = '${division_id}' AND site_id NOT IN (SELECT site_id FROM site_payment_details WHERE payment_year = '${currentYear}')`;
+    // Query the database
+    const query_result = await db.query(institutionUsersQuery);
+    const institutionUsers = query_result.rows;
+    const siteUsersQueryResult = await db.query(siteUsersQuery);
+    const siteUsers = siteUsersQueryResult.rows;
+    console.log(institutionUsers);
+    console.log(siteUsers);
+    req.flash("info", `The users who haven't paid yet are displayed below, please remind them to pay for this year :${currentYear}`);
+    req.flash("warning", `Institution users who haven't paid yet:
+                        ${institutionUsers.map(user => `Institution ID: ${user.institution_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
+    req.flash("warning", `Site users who haven't paid yet:
+                        ${siteUsers.map(user => `Site ID: ${user.site_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
     res.render("division.ejs",addFlashMessages(req));
     return;
 });
