@@ -1,21 +1,22 @@
 <%- include('partials/header') -%>
+
 <% if(!selected_year) { %>
     <h3>The Payment Details for all years:</h3>
 <% } else { %>
-    <h3>The Payment Details for the year :<%=selected_year%></h3>
+    <h3>The Payment Details for the year : <%= selected_year %></h3>
 <% } %>
+
 <form action="/list_payment_details_in_site" method="GET">
     <label for="selected_year">Select a Payment Year</label>
     <select id="selected_year" name="selected_year">
         <option value="">All years</option>
-        <% if(!selected_year) { %>
+        <% if (!selected_year) { %>
             <option value="" selected disabled>Select a Payment Year</option>
-        <% } else { %>
-            <option value="<%= selected_year %>" selected>Selected: <%= selected_year %></option>
         <% } %>
     </select>
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+
 <h3>Site Payment Details</h3>
 <div class="overflow-scroll">
 <table>
@@ -37,26 +38,26 @@
         <th>REMARKS</th>
         <th colspan="3" style="text-align: center;">OPTIONS</th>
     </tr>
-    <% information.forEach((entry)=>{ %>
+    <% information.forEach((entry) => { %>
         <tr>
-            <td><%=entry.site_id%></td>
-            <td><%=entry.assessment_year%></td>
-            <td><%=entry.payment_year%></td>
-            <td><%=entry.receipt_no_or_date%></td>
-            <td><%=entry.property_tax%></td>
-            <td><%=entry.rebate%></td>
-            <td><%=entry.service_tax%></td>
-            <td><%=entry.dimension_of_vacant_area_sqft%></td>
-            <td><%=entry.dimension_of_building_area_sqft%></td>
-            <td><%=entry.total_dimension_in_sqft%></td>
-            <td><%=entry.to_which_department_paid%></td>
-            <td><%=entry.cesses%></td>
-            <td><%=entry.interest%></td>
-            <td><%=entry.total_amount%></td>
-            <td><%=entry.remarks%></td>
+            <td><%= entry.site_id %></td>
+            <td><%= entry.assessment_year %></td>
+            <td><%= entry.payment_year %></td>
+            <td><%= entry.receipt_no_or_date %></td>
+            <td><%= entry.property_tax %></td>
+            <td><%= entry.rebate %></td>
+            <td><%= entry.service_tax %></td>
+            <td><%= entry.dimension_of_vacant_area_sqft %></td>
+            <td><%= entry.dimension_of_building_area_sqft %></td>
+            <td><%= entry.total_dimension_in_sqft %></td>
+            <td><%= entry.to_which_department_paid %></td>
+            <td><%= entry.cesses %></td>
+            <td><%= entry.interest %></td>
+            <td><%= entry.total_amount %></td>
+            <td><%= entry.remarks %></td>
             <% if (entry.bill_sl_no) { %>
                 <td>
-                    <a class="btn btn-info" href="/view_image/<%=entry.sl_no%>">View Bill</a>
+                    <a class="btn btn-info" href="/view_image/<%= entry.sl_no %>">View Bill</a>
                 </td>
             <% } else { %>
                 <td>
@@ -64,26 +65,34 @@
                 </td>
             <% } %>
             <td>
-                <a class="btn btn-secondary" href="/modify_payment_details?sl_no=<%=entry.sl_no%>">Modify</a>
+                <a class="btn btn-secondary" href="/modify_payment_details?sl_no=<%= entry.sl_no %>">Modify</a>
             </td>
             <td>
-                <a class="btn btn-danger" href="/delete_payment_details?sl_no=<%=entry.sl_no%>">Delete</a>
+                <a class="btn btn-danger" href="/delete_payment_details?sl_no=<%= entry.sl_no %>">Delete</a>
             </td>
         </tr>
-
     <% }) %>
 </table>
 </div>
 <a class="btn btn-primary" href="/new_site_payment_details">Add new site payment details</a>
+
 <script>
-    // This script will populate the dropdown with years from 2010 to the current year
-    const selectedYear = document.getElementById('selected_year');
-    const currentYear = new Date().getFullYear();
-    for(let i = currentYear; i >= 2010; i--) {
-        const option = document.createElement('option');
-        option.value = i;
-        option.textContent = i;
-        selectedYear.appendChild(option);
-    };
+    document.addEventListener('DOMContentLoaded', function() {
+        // This script will populate the dropdown with years from 2010 to the current year
+        const selectedYearElement = document.getElementById('selected_year');
+        const currentYear = new Date().getFullYear();
+        const selectedYear = "<%= selected_year %>";
+
+        for (let i = currentYear; i >= 2010; i--) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            if (selectedYear == i) {
+                option.selected = true;
+            }
+            selectedYearElement.appendChild(option);
+        }
+    });
 </script>
+
 <%- include('partials/footer'); -%>

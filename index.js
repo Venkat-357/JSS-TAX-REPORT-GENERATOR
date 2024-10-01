@@ -126,7 +126,6 @@ app.get("/modify", allowAdmins, async(req,res)=>{
     }
     const query_result = await db.query("SELECT * FROM division_users WHERE division_id=$1",[division_identification]);
     const retrieved_info = query_result.rows[0];
-    console.log(retrieved_info);
     if(!retrieved_info) {
         res.send("The data you are looking for is not available");
         return;
@@ -145,22 +144,15 @@ app.post("/modify_division_users",allowAdmins, async(req,res)=>{
     const phone_number = req.body.phone;
     const admin_id = req.session.user_details.admin_id;
 
-    console.log(division_id);
-    console.log(division);
-    console.log(email);
-    console.log(password);
-    console.log(phone_number);
-
     // Validate the input fields
-    /*if (!validateEmail(email)) {
+    if (!validateEmail(email)) {
         res.send("Invalid email");
         return;
-    }*/
+    }
     // if (!validatePassword(password)) {
     //     res.send("Invalid password");
     //     return;
     // }
-    console.log(phone_number);
     if (!phone_number || phone_number.length !== 10 || !/^\d+$/.test(phone_number)) {
         res.send("Invalid phone number");
         return;
@@ -171,13 +163,13 @@ app.post("/modify_division_users",allowAdmins, async(req,res)=>{
         return;
     }
     // Check if the division id, email, and phone number already exist
-    let query_result = await db.query(`SELECT * FROM division_users WHERE division_id = $1`,[division_id]);
+    /*let query_result = await db.query(`SELECT * FROM division_users WHERE division_id = $1`,[division_id]);
     if(query_result.rows.length !== 0) {
         res.send("Division id already exists");
         return;
-    }
+    }*/
     // We have to make sure that the email is unique across all the users, because login depends on the email
-    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+    /* query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
         UNION SELECT email FROM admins WHERE email = '${email}'
         UNION SELECT email FROM institution_users WHERE email = '${email}'
         UNION SELECT email FROM site_users WHERE email = '${email}'`);
@@ -189,10 +181,10 @@ app.post("/modify_division_users",allowAdmins, async(req,res)=>{
     if(query_result.rows.length !== 0) {
         res.send("Phone number already exists");
         return;
-    }
+    }*/
 
     try {
-        await db.query(`UPDATE division_users SET admin_id=$1,division_id=$2,division=$3,email=$4,password=$5,phone_number=$6 WHERE division_id=$6`,[admin_id,division_id,division,email,password,phone_number,division_id]);
+        await db.query(`UPDATE division_users SET admin_id=$1,division_id=$2,division=$3,email=$4,password=$5,phone_number=$6 WHERE division_id=$7`,[admin_id,division_id,division,email,password,phone_number,division_id]);
         console.log("division user details are updated successfully");
         res.redirect("/list_all_division_users");
         return;
@@ -202,6 +194,14 @@ app.post("/modify_division_users",allowAdmins, async(req,res)=>{
         return;
     }
 
+});
+
+//handling the route to delete the selected division user by admin
+app.get("/delete", allowAdmins, async(req,res)=>{
+    const division_identification = req.query['division_id'];
+    await db.query("DELETE FROM division_users WHERE division_id=$1",[division_identification]);
+    console.log("the division user is deleted successfully");
+    res.redirect("/list_all_division_users");
 });
 
 // Getting a list of all institution users for viewing by admins
@@ -341,6 +341,100 @@ app.get("/list_institution_users_in_division", allowDivisionUsers, async(req,res
     return;
 });
 
+//handling the request to modify the institution user details by the division user
+app.get("/modify_institution", allowDivisionUsers, async(req,res)=>{
+    const institution_identification = req.query['institution_id'];
+    console.log(institution_identification);
+    
+    const query_result = await db.query("SELECT * FROM institution_users WHERE institution_id=$1",[institution_identification]);
+    const retrieved_info = query_result.rows[0];
+    console.log(retrieved_info);
+    if(!retrieved_info)
+    {
+        console.log("the data you are requesting for is not available");
+        return;
+    }
+    res.render("modify_institution_users.ejs",{
+        retrieved_info : retrieved_info,
+    });
+    return;
+});
+
+app.post("/modify_institution_users", allowDivisionUsers, async(req,res)=>{
+    const division_id = req.body[`division-id`];
+    const email = req.body.email;
+    const password = req.body.password;
+    const phone_number = req.body[`phone-number`];
+    const institution_id = req.body[`institution-id`];
+    const country = req.body.country;
+    const state = req.body.state;
+    const district = req.body.district;
+    const taluk = req.body.taluk;
+    const institution_name = req.body[`institution-name`];
+    const village = req.body.village;
+    const pid = req.body.pid;
+    const khatha_no = req.body[`khatha-no`];
+    const khathadar_name = req.body[`khathadar-name`];
+    const building_type = req.body[`type-of-building`];
+
+    // Validate the input fields
+    if (!validateEmail(email)) {
+        res.send("Invalid email");
+        return;
+    }
+    // if (!validatePassword(password)) {
+    //     res.send("Invalid password");
+    //     return;
+    // }
+    if (phone_number.length !== 10 || isNaN(phone_number)) {
+        res.send("Invalid phone number");
+        return;
+    }
+    /*if ( division_id !== req.session.user_details.division_id) {
+        res.send("Invalid division id");
+        return;
+    }*/
+    // Check if the Institution id, email, and phone number already exist
+    /*let query_result = await db.query(`SELECT * FROM institution_users WHERE institution_id = $1`,[institution_id]);
+    if (query_result.rows.length !== 0) {
+        res.send("Institution id already exists");
+        return;
+    }
+    // We have to make sure that the email is unique across all the users, because login depends on the email
+    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+                                    UNION SELECT email FROM admins WHERE email = '${email}'
+                                    UNION SELECT email FROM institution_users WHERE email = '${email}'
+                                    UNION SELECT email FROM site_users WHERE email = '${email}'`);
+    if (query_result.rows.length !== 0) {
+        res.send("Email already exists");
+        return;
+    }
+    query_result = await db.query(`SELECT * FROM institution_users WHERE phone_number = $1`,[phone_number]);
+    if (query_result.rows.length !== 0) {
+        res.send("Phone number already exists");
+        return;
+    }*/
+    try {
+        await db.query(`UPDATE institution_users SET division_id=$1,email=$2,password=$3,phone_number=$4,institution_id=$5,country=$6,state=$7,district=$8,taluk=$9,institution_name=$10,village_or_city=$11,pid=$12,khatha_or_property_no=$13,name_of_khathadar=$14,type_of_building=$15 WHERE institution_id=$16`,[division_id,email,password,phone_number,institution_id,country,state,district,taluk,institution_name,village,pid,khatha_no,khathadar_name,building_type,institution_id]);
+        console.log("modified institution user details are added successfully");
+        res.redirect("/list_institution_users_in_division");
+        return;
+    } catch (error) {
+        console.log("failed to add a modified institution user details");
+        res.redirect("/modify_institution_users");
+        return;
+    }
+});
+
+//handling the route to delete the institution user by division user
+app.get("/delete_institution", allowDivisionUsers ,async(req,res)=>{
+    const institution_identification = req.query['institution_id'];
+    console.log(institution_identification);
+    await db.query("DELETE FROM institution_users WHERE institution_id = $1",[institution_identification]);
+    console.log("the institution user is deleted successfully");
+    return;
+});
+
 // Getting a list of all site users under a division for viewing by a division user
 app.get("/list_site_users_in_division", allowDivisionUsers, async(req,res) => {
     const queryResult = await db.query(`SELECT site_id,site_users.email,country,state,district,taluk,site_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building FROM site_users JOIN division_users ON site_users.division_id = division_users.division_id WHERE division_users.division_id = '${req.session.user_details.division_id}'`);
@@ -351,6 +445,99 @@ app.get("/list_site_users_in_division", allowDivisionUsers, async(req,res) => {
     return;
 });
 
+//handling the request to modify the site user details by the division user
+app.get("/modify_site", allowDivisionUsers, async(req,res)=>{
+    const site_identification = req.query['site_id'];
+    console.log(site_identification);
+    
+    const query_result = await db.query("SELECT * FROM site_users WHERE site_id=$1",[site_identification]);
+    const retrieved_info = query_result.rows[0];
+    console.log(retrieved_info);
+    if(!retrieved_info)
+    {
+        console.log("the data you are requesting for is not available");
+        return;
+    }
+    res.render("modify_site_users.ejs",{
+        retrieved_info : retrieved_info,
+    });
+    return;
+});
+
+app.post("/modify_site_users", allowDivisionUsers, async(req,res)=>{
+    const division_id = req.body[`division-id`];
+    const email = req.body.email;
+    const password = req.body.password;
+    const phone_number = req.body[`phone-number`];
+    const site_id = req.body[`site-id`];
+    const country = req.body.country;
+    const state = req.body.state;
+    const district = req.body.district;
+    const taluk = req.body.taluk;
+    const site_name = req.body[`site-name`];
+    const village = req.body.village;
+    const pid = req.body.pid;
+    const khatha_no = req.body[`khatha-no`];
+    const khathadar_name = req.body[`khathadar-name`];
+    const building_type = req.body[`type-of-building`];
+
+    // Validate the input fields
+    if (!validateEmail(email)) {
+        res.send("Invalid email");
+        return;
+    }
+    // if (!validatePassword(password)) {
+    //     res.send("Invalid password");
+    //     return;
+    // }
+    if (phone_number.length !== 10 || isNaN(phone_number)) {
+        res.send("Invalid phone number");
+        return;
+    }
+    /*if ( division_id !== req.session.user_details.division_id) {
+        res.send("Invalid division id");
+        return;
+    }*/
+    // Check if the Institution id, email, and phone number already exist
+    /*let query_result = await db.query(`SELECT * FROM institution_users WHERE institution_id = $1`,[institution_id]);
+    if (query_result.rows.length !== 0) {
+        res.send("Institution id already exists");
+        return;
+    }
+    // We have to make sure that the email is unique across all the users, because login depends on the email
+    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+                                    UNION SELECT email FROM admins WHERE email = '${email}'
+                                    UNION SELECT email FROM institution_users WHERE email = '${email}'
+                                    UNION SELECT email FROM site_users WHERE email = '${email}'`);
+    if (query_result.rows.length !== 0) {
+        res.send("Email already exists");
+        return;
+    }
+    query_result = await db.query(`SELECT * FROM institution_users WHERE phone_number = $1`,[phone_number]);
+    if (query_result.rows.length !== 0) {
+        res.send("Phone number already exists");
+        return;
+    }*/
+    try {
+        await db.query(`UPDATE site_users SET division_id=$1,email=$2,password=$3,phone_number=$4,site_id=$5,country=$6,state=$7,district=$8,taluk=$9,site_name=$10,village_or_city=$11,pid=$12,khatha_or_property_no=$13,name_of_khathadar=$14,type_of_building=$15 WHERE site_id=$16`,[division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village,pid,khatha_no,khathadar_name,building_type,site_id]);
+        console.log("modified site user details are added successfully");
+        res.redirect("/list_site_users_in_division");
+        return;
+    } catch (error) {
+        console.log("failed to add a modified site user details");
+        res.redirect("/modify_site_users");
+        return;
+    }
+});
+
+//handling the route to delete the site user by the division user
+app.get("/delete_site", allowDivisionUsers, async(req,res)=>{
+    const site_identification = req.query['site_id'];
+    console.log(site_identification);
+    await db.query("DELETE FROM site_users WHERE site_id=$1",[site_identification]);
+    console.log("the site user is deleted successfully");
+    return;
+});
 
 // Getting a list of all payment details under a division for viewing by a division user
 app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) => {
@@ -451,11 +638,12 @@ app.post("/create_new_institution", allowDivisionUsers, async(req,res)=>{
     try {
         await db.query(`INSERT INTO institution_users (division_id,email,password,phone_number,institution_id,country,state,district,taluk,institution_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,[division_id,email,password,phone_number,institution_id,country,state,district,taluk,institution_name,village,pid,khatha_no,khathadar_name,building_type]);
         console.log("new institution user added successfully");
-        res.redirect("/division");
+        res.redirect("/list_institution_users_in_division");
         return;
     } catch (error) {
         console.log("failed to add a new institution user");
         console.log(error)
+        res.redirect("/create_new_institution");
         return;
     }
 });
@@ -528,11 +716,12 @@ app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
     try {
         await db.query(`INSERT INTO site_users (division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,[division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village,pid,khatha_no,khathadar_name,building_type]);
         console.log("new site user added successfully");
-        res.redirect("/division");
+        res.redirect("/list_site_users_in_division");
         return;
     } catch (error) {
         console.log("failed to add a new site user");
-        console.log(error)
+        console.log(error);
+        res.redirect("/create_new_site");
         return;
     }
 });
@@ -614,6 +803,67 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
         }
 });
 
+//handling the route to modify the institution payment details by the respective institution user
+app.get("/modify_payment_details", allowInstitutionUsers, async(req,res)=>{
+    const sl_no = req.query['sl_no'];
+    const query_result = await db.query("SELECT * FROM institution_payment_details WHERE sl_no=$1",[sl_no]);
+    const retrieved_info = query_result.rows[0];
+    if(!retrieved_info)
+    {
+        console.log("the data you are looking for is not available");
+        return;
+    }
+    res.render("modify_institution_payment_details.ejs",{
+        retrieved_info : retrieved_info,
+    });
+    return;
+});
+
+app.post("/modify_institution_payment_details", allowInstitutionUsers, async(req,res)=>{
+    const institution_id = req.body[`site-id`];
+    const assessment_year = req.body[`assessment-year`];
+    const payment_year = req.body[`payment-year`];
+    const receipt_no = req.body['receipt-no'];
+    const property_tax = req.body[`property-tax`];
+    const rebate = req.body.rebate;
+    const service_tax = req.body[`service-tax`];
+    const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
+    const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
+    const total_dimension = req.body[`total-dimension`];
+    const department_paid = req.body[`department-paid`];
+    const cesses = req.body.cesses;
+    const interest = req.body.interest;
+    const total_amount = req.body[`total-amount`];
+    const remarks = req.body.remarks;
+    try {
+        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,assessment_year=$2,payment_year=$3,receipt_no_or_date=$4,property_tax=$5,rebate=$6,service_tax=$7,dimension_of_vacant_area_sqft=$8,dimension_of_building_area_sqft=$9,total_dimension_in_sqft=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15 WHERE institution_id=$16",[institution_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,institution_id]);
+        if(req.file) {
+            const fileBuffer = req.file.buffer;
+            const fileType = req.file.mimetype;
+            const fileName = req.file.originalname;
+            //insert the image into database
+            await db.query("UPDATE site_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0],fileBuffer,fileType,fileName]);
+            }
+            console.log("modified institution payment details are added successfully");
+            res.redirect("/list_payment_details_in_institution");
+            return;
+    } catch (error) {
+        console.log("failed to add the modified institution payment details");
+        console.log(error);
+        res.redirect("/modify_institution_payment_details");
+        return;
+    }
+});
+
+//handling the route to delete the payment details of institution users
+app.get("/delete_payment_details", allowInstitutionUsers, async(req,res)=>{
+    const sl_no = req.query['sl_no'];
+    console.log(sl_no);
+    await db.query("DELETE FROM institution_payment_details WHERE sl_no=$1",[sl_no]);
+    console.log("the institution payment details are deleted successfully");
+    return;
+});
+
 //handling the /site route and displaying the home page of site users
 app.get("/site",allowSiteUsers,allowSiteUsers,(req,res)=>{
     res.render("site.ejs");
@@ -690,6 +940,67 @@ app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), asy
         res.redirect("/new_site_payment_details");
         return;
     }
+});
+
+//handling the route to modify the site payment details by the respective site user
+app.get("/modify_payment_details", allowSiteUsers, async(req,res)=>{
+    const sl_no = req.query['sl_no'];
+    const query_result = await db.query("SELECT * FROM site_payment_details WHERE sl_no=$1",[sl_no]);
+    const retrieved_info = query_result.rows[0];
+    if(!retrieved_info)
+    {
+        console.log("the data you are looking for is not available");
+        return;
+    }
+    res.render("modify_site_payment_details.ejs",{
+        retrieved_info : retrieved_info,
+    });
+    return;
+});
+
+app.post("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
+    const site_id = req.body[`site-id`];
+    const assessment_year = req.body[`assessment-year`];
+    const payment_year = req.body[`payment-year`];
+    const receipt_no = req.body['receipt-no'];
+    const property_tax = req.body[`property-tax`];
+    const rebate = req.body.rebate;
+    const service_tax = req.body[`service-tax`];
+    const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
+    const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
+    const total_dimension = req.body[`total-dimension`];
+    const department_paid = req.body[`department-paid`];
+    const cesses = req.body.cesses;
+    const interest = req.body.interest;
+    const total_amount = req.body[`total-amount`];
+    const remarks = req.body.remarks;
+    try {
+        let sl_no = await db.query("UPDATE site_payment_details SET site_id=$1,assessment_year=$2,payment_year=$3,receipt_no_or_date=$4,property_tax=$5,rebate=$6,service_tax=$7,dimension_of_vacant_area_sqft=$8,dimension_of_building_area_sqft=$9,total_dimension_in_sqft=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15 WHERE site_id=$16",[site_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,site_id]);
+        if(req.file) {
+            const fileBuffer = req.file.buffer;
+            const fileType = req.file.mimetype;
+            const fileName = req.file.originalname;
+            //insert the image into database
+            await db.query("UPDATE site_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0],fileBuffer,fileType,fileName]);
+            }
+            console.log("modified site payment details are added successfully");
+            res.redirect("/list_payment_details_in_site");
+            return;
+    } catch (error) {
+        console.log("failed to add the modified site payment details");
+        console.log(error);
+        res.redirect("/modify_site_payment_details");
+        return;
+    }
+});
+
+//handling the route to delete the payment details of the site users
+app.get("/delete_site", allowSiteUsers, async(req,res)=>{
+    const sl_no = req.query['sl_no'];
+    console.log(sl_no);
+    await db.query("DELETE FROM site_payment_details WHERE sl_no=$1",[sl_no]);
+    console.log("the site payment details are deleted successfully");
+    return;
 });
 
 // View images

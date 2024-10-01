@@ -1,9 +1,15 @@
 <%- include(`partials/header`); -%>
-<form action="/modify_division_users" method="post" class="form-container" enctype="multipart/form-data">
+<form action="/modify_division_users" method="post" class="form-container">
     <h3>Modify the Division User</h3>
     <div class="form-group">
-        <label for="division-id">Division ID :</label>
-        <input type="text" id="division-id" name="division-id" value="<%= retrieved_info.division_id %>" required>
+        <label for="division-id">DIVISION ID :</label>
+        <input id="division-id" type="text" name="division-id"
+        <% if (retrieved_info.division_id) { %>
+        value="<%= retrieved_info.division_id %>"
+        readonly
+        class="gray-out"
+        <% } %>
+        >
     </div>
     <div class="form-group">
         <label for="division">Division Name :</label>

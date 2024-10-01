@@ -1,10 +1,10 @@
 <%- include(`partials/header`); -%>
-<form action="/new_institution_payment_details" method="post" enctype="multipart/form-data" class="form-container">
+<form action="/modify_institution_payment_details" method="post" enctype="multipart/form-data" class="form-container">
     <div class="form-group">
     <label for="institution-id">INSTITUTION ID :</label>
     <input type="text" id="institution-id" name="institution-id"
-    <% if(institution_id) { %>
-        value="<%= institution_id %>"
+    <% if(retrieved_info.institution_id) { %>
+        value="<%= retrieved_info.institution_id %>"
         readonly
         class="gray-out"
     <% } %>
@@ -27,37 +27,37 @@
 
     <div class="form-group">
     <label for="receipt-no">RECEIPT NUMBER OR DATE :</label>
-    <input type="text" id="receipt-no" name="receipt-no" required>
+    <input type="text" id="receipt-no" name="receipt-no" value="<%=retrieved_info.receipt_no_or_date%>" required>
     </div>
 
     <div class="form-group">
     <label for="property-tax">PROPERTY TAX :</label>
-    <input type="number" id="property-tax" name="property-tax" required>
+    <input type="number" id="property-tax" name="property-tax" value="<%=retrieved_info.property_tax%>" required>
     </div>
 
     <div class="form-group">
     <label for="rebate">REBATE :</label>
-    <input type="number" id="rebate" name="rebate" required>
+    <input type="number" id="rebate" name="rebate" value="<%=retrieved_info.rebate%>" required>
     </div>
 
     <div class="form-group">
     <label for="service-tax">SERVICE TAX :</label>
-    <input type="number" id="service-tax" name="service-tax" required>
+    <input type="number" id="service-tax" name="service-tax" value="<%=retrieved_info.service_tax%>" required>
     </div>
 
     <div class="form-group">
     <label for="dimension-of-vacant-area-in-sqft">DIMENSION OF VACANT AREA IN SQFT :</label>
-    <input type="number" id="dimension-of-vacant-area-in-sqft" name="dimension-of-vacant-area-in-sqft" required>
+    <input type="number" id="dimension-of-vacant-area-in-sqft" name="dimension-of-vacant-area-in-sqft" value="<%=retrieved_info.dimension_of_vacant_area_sqft%>" required>
     </div>
 
     <div class="form-group">
     <label for="dimension-of-building-area-in-sqft">DIMENSION OF BUILDING AREA IN SQFT :</label>
-    <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" required>
+    <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" value="<%=retrieved_info.dimension_of_building_area_sqft%>" required>
     </div>
 
     <div class="form-group">
     <label for="total-dimension">TOTAL DIMENSION IN SQFT :</label>
-    <input type="number" id="total-dimension" name="total-dimension" required>
+    <input type="number" id="total-dimension" name="total-dimension" value="<%=retrieved_info.total_dimension_in_sqft%>" required>
     </div>
 
     <div class="form-group">
@@ -78,27 +78,27 @@
 
     <div class="form-group">
     <label for="cesses">CESSES :</label>
-    <input type="number" id="cesses" name="cesses" required>
+    <input type="number" id="cesses" name="cesses" value="<%=retrieved_info.cesses%>" required>
     </div>
 
     <div class="form-group">
     <label for="interest">INTEREST :</label>
-    <input type="number" id="interest" name="interest" required>
+    <input type="number" id="interest" name="interest" value="<%=retrieved_info.interest%>" required>
     </div>
 
     <div class="form-group">
     <label for="total-amount">TOTAL AMOUNT</label>
-    <input type="number" id="total-amount" name="total-amount" required>
+    <input type="number" id="total-amount" name="total-amount" value="<%=retrieved_info.total_amount%>" required>
     </div>
 
     <div class="form-group">
     <label for="remarks">REMARKS</label>
-    <input type="text" id="remarks" name="remarks" required>
+    <input type="text" id="remarks" name="remarks" value="<%=retrieved_info.remarks%>" required>
     </div>    
 
     <div class="form-group">
     <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif):</label>
-    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif" required>
+    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif" value="<%=retrieved_info.image%>" required>
     </div>
     
     <button type="submit">Submit</button>
