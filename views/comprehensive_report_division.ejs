@@ -85,4 +85,43 @@
 
 </table>
 </div>
+<button id="print-report" class="btn btn-primary">Print Report</button>
+<style>
+    @media print {
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10px; /* Adjust font size for better fitting */
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #000;
+        padding: 2px 4px; /* Reduced padding to make it compact */
+        text-align: left;
+    }
+
+    th {
+        background-color: #f4f4f4;
+    }
+
+    .overflow-scroll {
+        overflow: visible; /* Ensure full content is visible */
+    }
+
+    .btn {
+        display: none; /* Hide the button during print */
+    }
+}
+</style>
+<script>
+    // Add an event listener to the print button
+    document.getElementById("print-report").addEventListener("click", function() {
+        // Trigger the browser's print dialog
+        window.print();
+    });
+</script>
 <%- include('partials/footer'); -%>
