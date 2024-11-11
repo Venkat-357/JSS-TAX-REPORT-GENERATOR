@@ -80,8 +80,7 @@ const createTablesIfNotExists = (db) => {
         db.query(`CREATE TABLE IF NOT EXISTS public.institution_payment_details(
     sl_no SERIAL PRIMARY KEY,
     institution_id character varying(50) COLLATE pg_catalog."default",
-    assessment_year integer NOT NULL,
-    payment_year integer NOT NULL,
+    payment_year character varying(255) NOT NULL,
     receipt_no_or_date character varying(50) COLLATE pg_catalog."default" NOT NULL,
     property_tax integer NOT NULL,
     rebate integer NOT NULL,
@@ -103,8 +102,7 @@ const createTablesIfNotExists = (db) => {
         db.query(`CREATE TABLE IF NOT EXISTS public.site_payment_details(
             sl_no SERIAL PRIMARY KEY,
             site_id character varying(50) COLLATE pg_catalog."default" NOT NULL,
-            assessment_year integer NOT NULL,
-            payment_year integer NOT NULL,
+            payment_year character varying(255) NOT NULL,
             receipt_no_or_date character varying(50) COLLATE pg_catalog."default" NOT NULL,
             property_tax integer NOT NULL,
             rebate integer NOT NULL,
