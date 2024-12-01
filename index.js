@@ -766,7 +766,7 @@ app.get("/institution",allowInstitutionUsers,(req,res)=>{
 app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req,res)=>{
     const selected_year = req.query?.selected_year;
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query(`SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no  FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = '${req.session.user_details.institution_id}'`);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no  FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1",[req.session.user_details.institution_id]);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_institution.ejs",{
             information : information,
@@ -774,7 +774,8 @@ app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.* AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
+        const selected_year = req.query?.selected_year;
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no  FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_institution.ejs",{
             information : information,
