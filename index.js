@@ -238,10 +238,6 @@ app.get("/list_all_site_users", allowAdmins, async(req,res)=>{
 // Getting a list of all payment details for viewing by admins
 app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
     const selected_year = req.query?.selected_year;
-    if (selected_year && isNaN(selected_year)) {
-        res.send("Invalid year")
-        return;
-    }
     // TODO: Need to show division details by joining that table here too
     // NOTE: LEFT JOIN TO DISPLAY EVEN IF THE BILL IS NOT UPLOADED
     //dispay the payment details if and only if the current year details are provided else display all the details
@@ -580,10 +576,6 @@ app.get("/delete_site", allowDivisionUsers, async(req,res)=>{
 // Getting a list of all payment details under a division for viewing by a division user
 app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) => {
     const selected_year = req.query?.selected_year;
-    if (selected_year && isNaN(selected_year)) {
-        res.send("Invalid year")
-        return;
-    }
     if(!selected_year) {
         const institution_payment_details_query_result = await db.query(`SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
         const site_payment_details_query_result = await db.query(`SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.division_id = '${req.session.user_details.division_id}'`);
@@ -773,10 +765,6 @@ app.get("/institution",allowInstitutionUsers,(req,res)=>{
 //handling the /list_payment_details_in_institution route to display all the institution payment details  
 app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req,res)=>{
     const selected_year = req.query?.selected_year;
-    if (selected_year && isNaN(selected_year)) {
-        res.send("Invalid year")
-        return;
-    }
     if(!selected_year) {
         const institution_payment_details_query_result = await db.query(`SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no  FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = '${req.session.user_details.institution_id}'`);
         const information = institution_payment_details_query_result.rows;
@@ -807,7 +795,6 @@ app.get("/new_institution_payment_details",allowInstitutionUsers,(req,res)=>{
 //handling the /new_institution_payment_details route to upload the new institution payment details to the database
 app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single('image'),async(req,res)=>{
     const institution_id = req.body[`institution-id`];
-    const assessment_year = req.body[`assessment-year`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
     const property_tax = req.body[`property-tax`];
@@ -822,7 +809,7 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,assessment_year,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[institution_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
+            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
             if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
@@ -859,7 +846,6 @@ app.get("/modify_payment_details", allowInstitutionUsers, async(req,res)=>{
 
 app.post("/modify_institution_payment_details", allowInstitutionUsers, async(req,res)=>{
     const institution_id = req.body[`site-id`];
-    const assessment_year = req.body[`assessment-year`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
     const property_tax = req.body[`property-tax`];
@@ -874,13 +860,13 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, async(req
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,assessment_year=$2,payment_year=$3,receipt_no_or_date=$4,property_tax=$5,rebate=$6,service_tax=$7,dimension_of_vacant_area_sqft=$8,dimension_of_building_area_sqft=$9,total_dimension_in_sqft=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15 WHERE institution_id=$16",[institution_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,institution_id]);
+        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE institution_id=$15",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,institution_id]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
             const fileName = req.file.originalname;
             //insert the image into database
-            await db.query("UPDATE site_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0],fileBuffer,fileType,fileName]);
+            await db.query("UPDATE institution_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0],fileBuffer,fileType,fileName]);
             }
             console.log("modified institution payment details are added successfully");
             res.redirect("/list_payment_details_in_institution");
@@ -912,10 +898,6 @@ app.get("/site",allowSiteUsers,allowSiteUsers,(req,res)=>{
 //handling the /list_payment_details_in_site route to display all the site payment details
 app.get("/list_payment_details_in_site", allowSiteUsers, async(req,res)=>{
     const selected_year = req.query?.selected_year;
-    if (selected_year && isNaN(selected_year)) {
-        res.send("Invalid year")
-        return;
-    }
     if(!selected_year) {
         const institution_payment_details_query_result = await db.query(`SELECT site_payment_details.*, site_bills.sl_no AS bill_sl_no FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no WHERE site_users.site_id = '${req.session.user_details.site_id}'`);
         const information = institution_payment_details_query_result.rows;
@@ -946,7 +928,6 @@ app.get("/new_site_payment_details",allowSiteUsers,(req,res)=>{
 //handling the /new_site_payment_details route to upload the new site payment details to the database
 app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), async(req,res)=>{
     const site_id = req.body[`site-id`];
-    const assessment_year = req.body[`assessment-year`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
     const property_tax = req.body[`property-tax`];
@@ -961,7 +942,7 @@ app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), asy
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("INSERT INTO site_payment_details (site_id,assessment_year,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[site_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
+        let sl_no = await db.query("INSERT INTO site_payment_details (site_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING sl_no",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
@@ -998,7 +979,6 @@ app.get("/modify_payment_details", allowSiteUsers, async(req,res)=>{
 
 app.post("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
     const site_id = req.body[`site-id`];
-    const assessment_year = req.body[`assessment-year`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
     const property_tax = req.body[`property-tax`];
@@ -1007,13 +987,13 @@ app.post("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
     const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
     const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
     const total_dimension = req.body[`total-dimension`];
-    const department_paid = req.body[`department-paid`];
+    const department_paid = req.body[`department-paid`] || 'default_department';
     const cesses = req.body.cesses;
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("UPDATE site_payment_details SET site_id=$1,assessment_year=$2,payment_year=$3,receipt_no_or_date=$4,property_tax=$5,rebate=$6,service_tax=$7,dimension_of_vacant_area_sqft=$8,dimension_of_building_area_sqft=$9,total_dimension_in_sqft=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15 WHERE site_id=$16",[site_id,assessment_year,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,site_id]);
+        let sl_no = await db.query("UPDATE site_payment_details SET site_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE site_id=$15",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,site_id]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;

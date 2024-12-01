@@ -12,17 +12,11 @@
     </div> 
 
     <div class="form-group">
-    <label for="assessment-year">ASSESSMENT YEAR :</label>
-    <select id="assessment-year" name="assessment-year" required>
-        <option value="" selected disabled>Select an Assessment Year</option>
-    </select>
-    </div>
-
-    <div class="form-group">
-    <label for="payment-year">PAYMENT YEAR :</label>
-    <select id="payment-year" name="payment-year" required>
-        <option value="" selected disabled>Select a Payment Year</option>
-    </select>
+        <label for="payment-year">Year:</label>
+        <select id="payment-year" name="payment-year" required>
+            <option value="" selected disabled>Select a Payment Year</option>
+        </select>
+        <small>Format: YYYY-YY (e.g., 2023-24)</small>
     </div>
 
     <div class="form-group">
@@ -101,19 +95,32 @@
     <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif" required>
     </div>
     
-    <button type="submit">Submit</button>
+    <div class="submit-button">
+        <button type="submit">Submit</button>
+    </div>
 </form>
 <script>
-    // This script will populate the dropdown with years from 2010 to the current year
-    const paymentYear = document.getElementById('payment-year');
-    const assessmentYear = document.getElementById('assessment-year');
-    const currentYear = new Date().getFullYear();
-    for(let i = currentYear; i >= 2010; i--) {
-        const option = document.createElement('option');
-        option.value = i;
-        option.textContent = i;
-        paymentYear.appendChild(option);
-        assessmentYear.appendChild(option.cloneNode(true));
-    };
+    document.addEventListener('DOMContentLoaded', function() {
+        // Populate the dropdown with years in the format "YYYY-YY" from 2010-11 to the current year
+        const selectedYearElement = document.getElementById('payment-year');
+        const currentYear = new Date().getFullYear();
+
+        // Replace this with the actual server-side variable if using a template engine
+        const selectedYear = "<%= typeof selected_year !== 'undefined' ? selected_year : '' %>";
+
+        for (let i = currentYear; i >= 2010; i--) {
+            const nextYear = (i + 1).toString().slice(-2); // Get the last two digits of the next year
+            const yearRange = `${i}-${nextYear}`;
+            const option = document.createElement('option');
+            option.value = yearRange;
+            option.textContent = yearRange;
+
+            if (selectedYear === yearRange) {
+                option.selected = true;
+            }
+
+            selectedYearElement.appendChild(option);
+        }
+    });
 </script>
 <%- include(`partials/footer`); -%>

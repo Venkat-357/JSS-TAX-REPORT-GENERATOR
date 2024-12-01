@@ -7,11 +7,13 @@
 <% } %>
 
 <form action="/list_payment_details_in_site" method="GET">
-    <label for="selected_year">Select a Payment Year</label>
+    <label for="selected_year">Select a Year</label>
     <select id="selected_year" name="selected_year">
         <option value="">All years</option>
-        <% if (!selected_year) { %>
-            <option value="" selected disabled>Select a Payment Year</option>
+        <% if(!selected_year) { %>
+            <option value="" selected disabled>Select a Year</option>
+        <% } else { %>
+            <option value="<%= selected_year %>" selected>Selected: <%= selected_year %></option>
         <% } %>
     </select>
     <button type="submit" class="btn btn-primary">Submit</button>
@@ -22,8 +24,7 @@
 <table>
     <tr>
         <th>SITE ID</th>
-        <th>ASSESSMENT YEAR</th>
-        <th>PAYMENT YEAR</th>
+        <th>YEAR</th>
         <th>RECEIPT NO / DATE</th>
         <th>PROPERTY TAX</th>
         <th>REBATE</th>
@@ -41,7 +42,6 @@
     <% information.forEach((entry) => { %>
         <tr>
             <td><%= entry.site_id %></td>
-            <td><%= entry.assessment_year %></td>
             <td><%= entry.payment_year %></td>
             <td><%= entry.receipt_no_or_date %></td>
             <td><%= entry.property_tax %></td>
@@ -57,7 +57,7 @@
             <td><%= entry.remarks %></td>
             <% if (entry.bill_sl_no) { %>
                 <td>
-                    <a class="btn btn-info" href="/view_image/<%= entry.sl_no %>">View Bill</a>
+                    <a class="btn btn-info" href="/view_image/<%= entry.bill_sl_no %>">View Bill</a>
                 </td>
             <% } else { %>
                 <td>
@@ -65,10 +65,10 @@
                 </td>
             <% } %>
             <td>
-                <a class="btn btn-secondary" href="/modify_payment_details?sl_no=<%= entry.sl_no %>">Modify</a>
+                <a class="btn btn-secondary" href="/modify_payment_details?sl_no=<%= entry.bill_sl_no %>">Modify</a>
             </td>
             <td>
-                <a class="btn btn-danger" href="/delete_payment_details?sl_no=<%= entry.sl_no %>">Delete</a>
+                <a class="btn btn-danger" href="/delete_payment_details?sl_no=<%= entry.bill_sl_no %>">Delete</a>
             </td>
         </tr>
     <% }) %>
@@ -78,21 +78,26 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // This script will populate the dropdown with years from 2010 to the current year
+        // Populate the dropdown with years in the format "YYYY-YY" from 2010-11 to the current year
         const selectedYearElement = document.getElementById('selected_year');
         const currentYear = new Date().getFullYear();
         const selectedYear = "<%= selected_year %>";
 
         for (let i = currentYear; i >= 2010; i--) {
+            const nextYear = (i + 1).toString().slice(-2); // Get the last two digits of the next year
+            const yearRange = `${i}-${nextYear}`;
             const option = document.createElement('option');
-            option.value = i;
-            option.textContent = i;
-            if (selectedYear == i) {
+            option.value = yearRange;
+            option.textContent = yearRange;
+
+            if (selectedYear === yearRange) {
                 option.selected = true;
             }
+
             selectedYearElement.appendChild(option);
         }
     });
 </script>
+
 
 <%- include('partials/footer'); -%>
