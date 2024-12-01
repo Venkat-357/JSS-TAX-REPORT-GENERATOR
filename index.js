@@ -354,13 +354,17 @@ app.get("/division", allowDivisionUsers, async(req,res) => {
     const institutionUsers = query_result.rows;
     const siteUsersQueryResult = await db.query(siteUsersQuery);
     const siteUsers = siteUsersQueryResult.rows;
-    console.log(institutionUsers);
-    console.log(siteUsers);
-    req.flash("info", `The users who haven't paid yet are displayed below, please remind them to pay for this year :${currentYear}`);
-    req.flash("warning", `Institution users who haven't paid yet:
-                        ${institutionUsers.map(user => `Institution ID: ${user.institution_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
-    req.flash("warning", `Site users who haven't paid yet:
-                        ${siteUsers.map(user => `Site ID: ${user.site_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
+    if (institutionUsers || siteUsers) {
+        req.flash("info", `The users who haven't paid yet are displayed below, please remind them to pay for this year :${currentYear}`);
+        if (institutionUsers.length >= 0) {
+            req.flash("warning", `Institution users who haven't paid yet:
+                ${institutionUsers.map(user => `Institution ID: ${user.institution_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
+        }
+        if (siteUsers.length >= 0) {
+            req.flash("warning", `Site users who haven't paid yet:
+                                ${siteUsers.map(user => `Site ID: ${user.site_id}, Khatha/Property No: ${user.khatha_or_property_no}, Phone Number: ${user.phone_number}`).join('\n')}`);
+        }
+    }
     res.render("division.ejs",addFlashMessages(req));
     return;
 });
@@ -895,7 +899,7 @@ app.get("/delete_payment_details", allowInstitutionUsers, async(req,res)=>{
     console.log(sl_no);
     await db.query("DELETE FROM institution_payment_details WHERE sl_no=$1",[sl_no]);
     console.log("the institution payment details are deleted successfully");
-    return;
+    return redirect('/list_payment_details_in_institution');
 });
 
 //handling the /site route and displaying the home page of site users
@@ -951,7 +955,7 @@ app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), asy
     const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
     const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
     const total_dimension = req.body[`total-dimension`];
-    const department_paid = req.body[`department-paid`];
+    const department_paid = req.body[`department`];
     const cesses = req.body.cesses;
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];

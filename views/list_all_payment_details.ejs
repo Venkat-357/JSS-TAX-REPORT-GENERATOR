@@ -109,7 +109,7 @@
             <td><%=entry.remarks%></td>
             <% if (entry.bill_sl_no) { %>
                 <td>
-                    <a class="btn btn-info" href="/view_image?sl_no=<%=entry.sl_no%>">View Bill</a>
+                    <a class="btn btn-info" href="/view_image/<%=entry.sl_no%>">View Bill</a>
                 </td>
             <% } else { %>
                 <td>

@@ -10,7 +10,7 @@
 <body>
     <div class="header">
         <img src="JSSMVP_logo.jpeg" alt="Left Logo" style="width: 100px; height: 100px;">
-        <div class="header-title">JSS TAX APP</div>
+        <div class="header-title">JSS Mahavidyapeetha</div>
         <% if (isLoggedIn) { %>
             <% if (isAdmin) { %>
                 <h5><span class="badge text-bg-secondary">Logged in as ADMIN</span></h5>
@@ -32,7 +32,7 @@
     <% if (flash_messages) { %>
         <% for (const message_type in flash_messages) { %>
             <% flash_messages[message_type].forEach(function(msg) { %>
-                <div class="w-50 mx-auto text-center">
+                <div class="w-50 mx-auto text-center mt-1">
                     <div class="alert alert-<%= message_type%> alert-dismissible fade show" role="alert">
                         <%= msg %>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
