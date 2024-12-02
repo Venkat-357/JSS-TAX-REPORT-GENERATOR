@@ -93,6 +93,7 @@ const createTablesIfNotExists = (db) => {
     interest integer NOT NULL,
     total_amount integer NOT NULL,
     remarks character varying(1000) COLLATE pg_catalog."default" NOT NULL,
+    approval_status boolean NOT NULL,
     CONSTRAINT institution_payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
     CONSTRAINT payment_details_institution_id_fkey FOREIGN KEY (institution_id)
         REFERENCES public.institution_users (institution_id) MATCH SIMPLE
@@ -115,6 +116,7 @@ const createTablesIfNotExists = (db) => {
             interest integer NOT NULL,
             total_amount integer NOT NULL,
             remarks character varying(1000) COLLATE pg_catalog."default" NOT NULL,
+            approval_status boolean NOT NULL,
             CONSTRAINT site_payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date),
             CONSTRAINT payment_details_site_id_fkey FOREIGN KEY (site_id)
                 REFERENCES public.site_users (site_id) MATCH SIMPLE

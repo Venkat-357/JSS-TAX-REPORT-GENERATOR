@@ -601,6 +601,70 @@ app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) 
     }
 });
 
+//code to handle the APPROVE button by the division users approving institution payment details
+app.get("/approve_institution_payment_details", allowDivisionUsers, async (req, res) => {
+    const sl_no = req.query.sl_no;
+    try {
+        // Validate sl_no
+        if (!sl_no) {
+            res.status(400).send("Invalid request. Missing sl_no.");
+            return;
+        }
+
+        // Check if the record exists
+        const recordCheck = await db.query("SELECT * FROM institution_payment_details WHERE sl_no = $1", [sl_no]);
+        if (recordCheck.rowCount === 0) {
+            res.status(404).send("Payment details not found.");
+            return;
+        }
+
+        // Approve the payment
+        await db.query("UPDATE institution_payment_details SET approval_status = true WHERE sl_no = $1", [sl_no]);
+
+        console.log(`Payment details with sl_no ${sl_no} approved successfully.`);
+        //res.status(200).send("Payment details approved successfully.");
+        res.redirect("/list_payment_details_in_division");
+        return;
+    } catch (error) {
+        console.error("Error approving payment details:", error);
+        //res.status(500).send("An error occurred while approving payment details.");
+        res.redirect("/list_payment_details_in_division");
+        return;
+    }
+});
+
+//code to handle the APPROVE button by the division users approving site payment details
+app.get("/approve_site_payment_details", allowDivisionUsers, async (req, res) => {
+    const sl_no = req.query.sl_no;
+    try {
+        // Validate sl_no
+        if (!sl_no) {
+            res.status(400).send("Invalid request. Missing sl_no.");
+            return;
+        }
+
+        // Check if the record exists
+        const recordCheck = await db.query("SELECT * FROM site_payment_details WHERE sl_no = $1", [sl_no]);
+        if (recordCheck.rowCount === 0) {
+            res.status(404).send("Payment details not found.");
+            return;
+        }
+
+        // Approve the payment
+        await db.query("UPDATE site_payment_details SET approval_status = true WHERE sl_no = $1", [sl_no]);
+
+        console.log(`Payment details with sl_no ${sl_no} approved successfully.`);
+        //res.status(200).send("Payment details approved successfully.");
+        res.redirect("/list_payment_details_in_division");
+        return;
+    } catch (error) {
+        console.error("Error approving payment details:", error);
+        //res.status(500).send("An error occurred while approving payment details.");
+        res.redirect("/list_payment_details_in_division");
+        return;
+    }
+});
+
 // Create new institution users by division users
 // NEEDS MORE RIGOOROUS TESTING
 app.get("/create_new_institution", allowDivisionUsers, (req,res)=>{
@@ -885,7 +949,8 @@ app.get("/delete_payment_details", allowInstitutionUsers, async(req,res)=>{
     console.log(sl_no);
     await db.query("DELETE FROM institution_payment_details WHERE sl_no=$1",[sl_no]);
     console.log("the institution payment details are deleted successfully");
-    return redirect('/list_payment_details_in_institution');
+    res.redirect('/list_payment_details_in_institution');
+    return;
 });
 
 //handling the /site route and displaying the home page of site users
@@ -1013,11 +1078,12 @@ app.post("/modify_site_payment_details", allowSiteUsers, upload.single('image'),
 });
 
 //handling the route to delete the payment details of the site users
-app.get("/delete_site", allowSiteUsers, async(req,res)=>{
+app.get("/delete_site_payment_details", allowSiteUsers, async(req,res)=>{
     const sl_no = req.query['sl_no'];
     console.log(sl_no);
     await db.query("DELETE FROM site_payment_details WHERE sl_no=$1",[sl_no]);
     console.log("the site payment details are deleted successfully");
+    res.redirect("/list_payment_details_in_site");
     return;
 });
 
@@ -1145,7 +1211,7 @@ app.get("/local_report_division",allowDivisionUsers,async(req,res)=>{
 app.get("/comprehensive_report_institution",allowInstitutionUsers,async(req,res)=>{
     let ins_id = req.session.user_details.institution_id;
     let institution_id = ins_id.toUpperCase();
-    const institution_report_query_result = await db.query("SELECT institution_users.institution_id,institution_payment_details.* FROM institution_users LEFT JOIN institution_payment_details ON institution_users.institution_id = institution_payment_details.institution_id WHERE institution_users.institution_id=$1",[institution_id]);
+    const institution_report_query_result = await db.query("SELECT institution_users.institution_id,institution_users.institution_name,institution_users.khatha_or_property_no,institution_users.pid,institution_payment_details.* FROM institution_users LEFT JOIN institution_payment_details ON institution_users.institution_id = institution_payment_details.institution_id WHERE institution_users.institution_id=$1",[institution_id]);
     const comprehensive_institution_report = institution_report_query_result.rows;
     res.render("comprehensive_report_institution.ejs",{
         comprehensive_institution_report : comprehensive_institution_report,
@@ -1169,7 +1235,7 @@ app.get("/local_report_institution",allowInstitutionUsers,async(req,res)=>{
 app.get("/comprehensive_report_site",allowSiteUsers,async(req,res)=>{
     let s_id = req.session.user_details.site_id;
     let site_id = s_id.toUpperCase();
-    const comprehensive_site_report_query_result = await db.query("SELECT site_users.site_id,site_payment_details.* FROM site_users LEFT JOIN site_payment_details ON site_users.site_id = site_payment_details.site_id WHERE site_users.site_id=$1",[site_id]);
+    const comprehensive_site_report_query_result = await db.query("SELECT site_users.site_id,site_users.site_name,site_users.pid,site_users.khatha_or_property_no,site_payment_details.* FROM site_users LEFT JOIN site_payment_details ON site_users.site_id = site_payment_details.site_id WHERE site_users.site_id=$1",[site_id]);
     const comprehensive_site_report = comprehensive_site_report_query_result.rows;
     res.render("comprehensive_report_site.ejs",{
         comprehensive_site_report : comprehensive_site_report,

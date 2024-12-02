@@ -61,9 +61,13 @@
                     <a class="btn btn-warning" disabled>No Bill Uploaded</a>
                 </td>
             <% } %>
+            <% if(entry.approval_status) { %>
+                <td>Approved</td>
+               <% } else { %>  
             <td>
-                <a class="btn btn-success" href="/approve_payment_details?sl_no=<%=entry.bill_sl_no%>">Approve</a>
+                <a class="btn btn-success" href="/approve_institution_payment_details?sl_no=<%=entry.bill_sl_no%>">Approve</a>
             </td>
+            <% } %>
         </tr>
 
     <% }) %>
@@ -115,9 +119,13 @@
                     <a class="btn btn-warning" disabled>No Bill Uploaded</a>
                 </td>
             <% } %>
+            <% if(entry.approval_status) { %>
+                <td>Approved</td>
+               <% } else { %>  
             <td>
-                <a class="btn btn-success" href="/approve_payment_details?sl_no=<%=entry.bill_sl_no%>">Approve</a>
+                <a class="btn btn-success" href="/approve_site_payment_details?sl_no=<%=entry.bill_sl_no%>">Approve</a>
             </td>
+            <% } %>
         </tr>
 
     <% }) %>
