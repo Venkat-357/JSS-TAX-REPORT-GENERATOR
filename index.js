@@ -844,8 +844,8 @@ app.get("/modify_institution_payment_details", allowInstitutionUsers, async(req,
     return;
 });
 
-app.post("/modify_institution_payment_details", allowInstitutionUsers, async(req,res)=>{
-    const institution_id = req.body[`site-id`];
+app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.single('image'), async(req,res)=>{
+    const institution_id = req.body[`institution-id`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
     const property_tax = req.body[`property-tax`];
@@ -860,13 +860,13 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, async(req
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE institution_id=$15",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,institution_id]);
+        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE institution_id=$15 RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,institution_id]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
             const fileName = req.file.originalname;
             //insert the image into database
-            await db.query("UPDATE institution_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0],fileBuffer,fileType,fileName]);
+            await db.query("UPDATE institution_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0].sl_no,fileBuffer,fileType,fileName]);
             }
             console.log("modified institution payment details are added successfully");
             res.redirect("/list_payment_details_in_institution");
@@ -977,7 +977,7 @@ app.get("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
     return;
 });
 
-app.post("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
+app.post("/modify_site_payment_details", allowSiteUsers, upload.single('image'), async(req,res)=>{
     const site_id = req.body[`site-id`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
@@ -993,13 +993,13 @@ app.post("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("UPDATE site_payment_details SET site_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE site_id=$15",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,site_id]);
+        let sl_no = await db.query("UPDATE site_payment_details SET site_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE site_id=$15 returning sl_no",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,site_id]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
             const fileName = req.file.originalname;
             //insert the image into database
-            await db.query("UPDATE site_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0],fileBuffer,fileType,fileName]);
+            await db.query("UPDATE site_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0].sl_no,fileBuffer,fileType,fileName]);
             }
             console.log("modified site payment details are added successfully");
             res.redirect("/list_payment_details_in_site");
