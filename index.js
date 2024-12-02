@@ -129,7 +129,7 @@ app.get("/list_all_division_users", allowAdmins, async(req,res) => {
 });
 
 //handling the modify option to modify the division users details by the admin
-app.get("/modify", allowAdmins, async(req,res)=>{
+app.get("/modify_division_user", allowAdmins, async(req,res)=>{
     let division_identification = req.query['division_id'];
     if(!division_identification) {
         res.send("The page you are looking for is not available");
@@ -147,7 +147,7 @@ app.get("/modify", allowAdmins, async(req,res)=>{
     return;
 });
 
-app.post("/modify_division_users",allowAdmins, async(req,res)=>{
+app.post("/modify_division_user",allowAdmins, async(req,res)=>{
     const division_id = req.body['division-id'];
     const division = req.body.division;
     const email = req.body.email;
@@ -208,7 +208,7 @@ app.post("/modify_division_users",allowAdmins, async(req,res)=>{
 });
 
 //handling the route to delete the selected division user by admin
-app.get("/delete", allowAdmins, async(req,res)=>{
+app.get("/delete_division", allowAdmins, async(req,res)=>{
     const division_identification = req.query['division_id'];
     await db.query("DELETE FROM division_users WHERE division_id=$1",[division_identification]);
     console.log("the division user is deleted successfully");
@@ -774,7 +774,7 @@ app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.* AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_institution.ejs",{
             information : information,
@@ -829,7 +829,7 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
 });
 
 //handling the route to modify the institution payment details by the respective institution user
-app.get("/modify_payment_details", allowInstitutionUsers, async(req,res)=>{
+app.get("/modify_institution_payment_details", allowInstitutionUsers, async(req,res)=>{
     const sl_no = req.query['sl_no'];
     const query_result = await db.query("SELECT * FROM institution_payment_details WHERE sl_no=$1",[sl_no]);
     const retrieved_info = query_result.rows[0];
@@ -962,7 +962,7 @@ app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), asy
 });
 
 //handling the route to modify the site payment details by the respective site user
-app.get("/modify_payment_details", allowSiteUsers, async(req,res)=>{
+app.get("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
     const sl_no = req.query['sl_no'];
     const query_result = await db.query("SELECT * FROM site_payment_details WHERE sl_no=$1",[sl_no]);
     const retrieved_info = query_result.rows[0];
