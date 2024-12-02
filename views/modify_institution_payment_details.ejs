@@ -14,7 +14,8 @@
     <div class="form-group">
         <label for="payment-year">Year:</label>
         <select id="payment-year" name="payment-year" required>
-            <option value="" selected disabled>Select a Payment Year</option>
+            <option value="" disabled>Select a Payment Year</option>
+            <option selected value="<%= retrieved_info.payment_year %>">Previously Selected: <%= retrieved_info.payment_year %></option>
         </select>
         <small>Format: YYYY-YY (e.g., 2023-24)</small>
     </div>
@@ -57,7 +58,8 @@
     <div class="form-group">
         <label for="department-paid">TO WHICH DEPARTMENT PAID :</label>
         <select name="department-paid" id="department-paid">
-            <option value="" selected disabled>Select a Department</option>
+            <option value="" disabled>Select a Department</option>
+            <option selected value="<%= retrieved_info.to_which_department_paid %>">Previously Selected: <%= retrieved_info.to_which_department_paid %></option>
             <option value="BBMP">BBMP</option>
             <option value="MCC">MCC</option>
             <option value="KHB">KHB</option>
