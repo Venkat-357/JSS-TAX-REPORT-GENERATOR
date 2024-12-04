@@ -201,14 +201,14 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
         return;
     } catch (error) {
         console.log("failed to update division user details");
-        res.redirect("/modify_division_users");
+        res.redirect("/modify_division_user");
         return;
     }
 
 });
 
 //handling the route to delete the selected division user by admin
-app.get("/delete_division", allowAdmins, async(req,res)=>{
+app.get("/delete_division_user", allowAdmins, async(req,res)=>{
     const division_identification = req.query['division_id'];
     await db.query("DELETE FROM division_users WHERE division_id=$1",[division_identification]);
     console.log("the division user is deleted successfully");
