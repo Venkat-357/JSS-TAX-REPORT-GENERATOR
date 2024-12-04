@@ -466,6 +466,7 @@ app.get("/delete_institution", allowDivisionUsers ,async(req,res)=>{
     console.log(institution_identification);
     await db.query("DELETE FROM institution_users WHERE institution_id = $1",[institution_identification]);
     console.log("the institution user is deleted successfully");
+    res.redirect("/list_institution_users_in_division");
     return;
 });
 
