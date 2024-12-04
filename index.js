@@ -605,6 +605,12 @@ app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) 
 app.get("/approve_institution_payment_details", allowDivisionUsers, async (req, res) => {
     const sl_no = req.query.sl_no;
     try {
+        // Check if institution is under the division user
+        const institutionCheck = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id WHERE institution_payment_details.sl_no = $1 AND institution_users.division_id = $2", [sl_no, req.session.user_details.division_id]);
+        if (institutionCheck.rowCount === 0) {
+            res.status(404).send("Not authorized..");
+            return;
+        }
         // Validate sl_no
         if (!sl_no) {
             res.status(400).send("Invalid request. Missing sl_no.");
@@ -642,7 +648,12 @@ app.get("/approve_site_payment_details", allowDivisionUsers, async (req, res) =>
             res.status(400).send("Invalid request. Missing sl_no.");
             return;
         }
-
+        // Check if the division user is the owner of the site user
+        const siteCheck = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id WHERE site_payment_details.sl_no = $1 AND site_users.division_id = $2", [sl_no, req.session.user_details.division_id]);
+        if (siteCheck.rowCount === 0) {
+            res.status(404).send("Not authorized.");
+            return;
+        }
         // Check if the record exists
         const recordCheck = await db.query("SELECT * FROM site_payment_details WHERE sl_no = $1", [sl_no]);
         if (recordCheck.rowCount === 0) {

@@ -62,7 +62,7 @@
                 </td>
             <% } %>
             <% if(entry.approval_status) { %>
-                <td>Approved</td>
+                <td><button disabled class="btn btn-warning" >Approved</button></td>
                <% } else { %>  
             <td>
                 <a class="btn btn-success" href="/approve_institution_payment_details?sl_no=<%=entry.bill_sl_no%>">Approve</a>
@@ -120,7 +120,7 @@
                 </td>
             <% } %>
             <% if(entry.approval_status) { %>
-                <td>Approved</td>
+                <td><button disabled class="btn btn-warning" >Approved</button></td>
                <% } else { %>  
             <td>
                 <a class="btn btn-success" href="/approve_site_payment_details?sl_no=<%=entry.bill_sl_no%>">Approve</a>
