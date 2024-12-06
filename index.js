@@ -29,17 +29,18 @@ const db = new pg.Client({
 });
 app.set("view engine","ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
+
 // Configure Multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for security
     fileFilter: (req, file, cb) => {
-        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
         if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Invalid file type. Only JPEG, PNG, and GIF are allowed!'), false);
+            cb(new Error('Invalid file type. Only JPEG, PNG, GIF and PDF are allowed!'), false);
         }
     }
 });
@@ -879,13 +880,14 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
     const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
     const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
     const total_dimension = req.body[`total-dimension`];
+    const usage_of_building = req.body[`usage-of-building`];
     const department_paid = req.body[`department-paid`];
     const cesses = req.body.cesses;
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
+            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks]);
             if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
@@ -930,13 +932,14 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
     const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
     const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
     const total_dimension = req.body[`total-dimension`];
+    const usage_of_building = req.body[`usage-of-building`];
     const department_paid = req.body[`department-paid`];
     const cesses = req.body.cesses;
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE institution_id=$15 RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,institution_id]);
+        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,usage_of_building=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15 WHERE institution_id=$16 RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks,institution_id]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
@@ -1013,13 +1016,14 @@ app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), asy
     const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
     const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
     const total_dimension = req.body[`total-dimension`];
+    const usage_of_building = req.body[`usage-of-building`];
     const department_paid = req.body[`department`];
     const cesses = req.body.cesses;
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("INSERT INTO site_payment_details (site_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING sl_no",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks]);
+        let sl_no = await db.query("INSERT INTO site_payment_details (site_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
@@ -1064,13 +1068,14 @@ app.post("/modify_site_payment_details", allowSiteUsers, upload.single('image'),
     const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
     const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
     const total_dimension = req.body[`total-dimension`];
+    const usage_of_building = req.body[`usage-of-building`];
     const department_paid = req.body[`department-paid`] || 'default_department';
     const cesses = req.body.cesses;
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
     try {
-        let sl_no = await db.query("UPDATE site_payment_details SET site_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,to_which_department_paid=$10,cesses=$11,interest=$12,total_amount=$13,remarks=$14 WHERE site_id=$15 returning sl_no",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,department_paid,cesses,interest,total_amount,remarks,site_id]);
+        let sl_no = await db.query("UPDATE site_payment_details SET site_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,usage_of_building=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15 WHERE site_id=$16 returning sl_no",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks,site_id]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;

@@ -12,18 +12,24 @@
     </div> 
 
     <div class="form-group">
-        <label for="payment-year">Year:</label>
-        <select id="payment-year" name="payment-year" required>
-            <option value="" selected disabled>Select a Payment Year</option>
-        </select>
-        <small>Format: YYYY-YY (e.g., 2023-24)</small>
+        <label for="dimension-of-vacant-area-in-sqft">DIMENSION OF VACANT AREA IN SQFT :</label>
+        <input type="number" id="dimension-of-vacant-area-in-sqft" name="dimension-of-vacant-area-in-sqft" oninput="calculateSum()" required>
     </div>
 
     <div class="form-group">
-        <label for="receipt-no">RECEIPT NUMBER OR DATE :</label>
-        <input type="text" id="receipt-no" name="receipt-no" required>
+        <label for="dimension-of-building-area-in-sqft">DIMENSION OF BUILDING AREA IN SQFT :</label>
+        <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" oninput="calculateSum()" required>
     </div>
 
+    <div class="form-group">
+        <label for="total-dimension">TOTAL DIMENSION IN SQFT :</label>
+        <input type="number" id="total-dimension" name="total-dimension" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="usage-of-building">USAGE OF BUILDING :</label>
+        <input type="text" id="usage-of-building" name="usage-of-building" required>
+    </div>
 
     <div class="form-group">
         <label for="property-tax">PROPERTY TAX :</label>
@@ -41,21 +47,6 @@
     </div>
 
     <div class="form-group">
-        <label for="dimension-of-vacant-area-in-sqft">DIMENSION OF VACANT AREA IN SQFT :</label>
-        <input type="number" id="dimension-of-vacant-area-in-sqft" name="dimension-of-vacant-area-in-sqft" required>
-    </div>
-
-    <div class="form-group">
-        <label for="dimension-of-building-area-in-sqft">DIMENSION OF BUILDING AREA IN SQFT :</label>
-        <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" required>
-    </div>
-
-    <div class="form-group">
-        <label for="total-dimension">TOTAL DIMENSION IN SQFT :</label>
-        <input type="number" id="total-dimension" name="total-dimension" required>
-    </div>
-
-    <div class="form-group">
         <label for="cesses">CESSES :</label>
         <input type="number" id="cesses" name="cesses" required>
     </div>
@@ -63,6 +54,11 @@
     <div class="form-group">
         <label for="interest">INTEREST :</label>
         <input type="number" id="interest" name="interest" required>
+    </div>
+
+    <div class="form-group">
+        <label for="total-amount">TOTAL AMOUNT</label>
+        <input type="number" id="total-amount" name="total-amount" required>
     </div>
 
     <div class="form-group">
@@ -82,9 +78,17 @@
     </div>
 
     <div class="form-group">
-        <label for="total-amount">TOTAL AMOUNT</label>
-        <input type="number" id="total-amount" name="total-amount" required>
-        </div>
+            <label for="payment-year">Year:</label>
+            <select id="payment-year" name="payment-year" required>
+                <option value="" selected disabled>Select a Payment Year</option>
+            </select>
+            <small>Format: YYYY-YY (e.g., 2023-24)</small>
+    </div>
+    
+    <div class="form-group">
+            <label for="receipt-no">RECEIPT NUMBER OR DATE :</label>
+            <input type="text" id="receipt-no" name="receipt-no" required>
+    </div>
 
     <div class="form-group">
         <label for="remarks">REMARKS</label>
@@ -92,8 +96,8 @@
     </div>    
 
     <div class="form-group">
-    <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif):</label>
-    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif" required>
+    <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif/.pdf):</label>
+    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif, image/pdf" required>
     </div>
     
     <div class="submit-button">
