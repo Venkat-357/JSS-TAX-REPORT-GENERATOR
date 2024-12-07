@@ -5,16 +5,17 @@
     <h3>The Payment Details for the year :<%=selected_year%></h3>
 <% } %>
 <form action="/list_all_payment_details" method="GET">
+    <div class="text-center">
     <label for="selected_year">Select a Year</label>
     <select id="selected_year" name="selected_year">
         <option value="">All years</option>
         <% if(!selected_year) { %>
             <option value="" selected disabled>Select a Year</option>
         <% } else { %>
-            <option value="<%= selected_year %>" selected>Selected: <%= selected_year %></option>
+            <option value="<%= selected_year %>" selected disabled>Selected: <%= selected_year %></option>
         <% } %>
     </select>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
 </form>
 <h3>Institution Payment Details</h3>
 <div class="overflow-scroll">
@@ -142,6 +143,9 @@
 
             selectedYearElement.appendChild(option);
         }
+        document.getElementById('selected_year').addEventListener('change', function() {
+            this.form.submit();
+        });
     });
 </script>
 <%- include('partials/footer'); -%>
