@@ -1,5 +1,6 @@
 <%- include(`partials/header`); -%>
 <form action="/modify_institution_users" method="post" class="form-container">
+    <h2 class="pt-3 pb-3">Modify Institution User</h2>
     <div class="form-group">
         <label for="division-id">DIVISION ID :</label>
         <input id="division-id" type="text" name="division-id"
@@ -25,7 +26,7 @@
     </div>
     <div class="form-group">
         <label for="institution-id">INSTITUTION ID :</label>
-        <input type="text" id="institution-id" name="institution-id" value="<%=retrieved_info.institution_id%>" readonly required>
+        <input type="text" id="institution-id" name="institution-id" value="<%=retrieved_info.institution_id%>" readonly class="gray-out" required>
     </div>
     <div class="form-group">
         <label for="country">COUNTRY :</label>

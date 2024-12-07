@@ -166,7 +166,7 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
     //     return;
     // }
     if (!phone_number || phone_number.length !== 10 || !/^\d+$/.test(phone_number)) {
-        res.send("Invalid phone number");
+        res.send("Invalid phone number, make sure it's 10 digits");
         return;
     }
 
@@ -174,14 +174,9 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
         res.send("Invalid admin id");
         return;
     }
-    // Check if the division id, email, and phone number already exist
-    /*let query_result = await db.query(`SELECT * FROM division_users WHERE division_id = $1`,[division_id]);
-    if(query_result.rows.length !== 0) {
-        res.send("Division id already exists");
-        return;
-    }*/
+    // Check if email, and phone number already exist
     // We have to make sure that the email is unique across all the users, because login depends on the email
-    /* query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+    let query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}' AND division_id != '${division_id}'
         UNION SELECT email FROM admins WHERE email = '${email}'
         UNION SELECT email FROM institution_users WHERE email = '${email}'
         UNION SELECT email FROM site_users WHERE email = '${email}'`);
@@ -189,11 +184,14 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
         res.send("Email already exists");
         return;
     }
-    query_result = await db.query(`SELECT * FROM division_users WHERE phone_number = $1 AND division_id != $2`,[phone_number,division_id]);
+    query_result = await db.query(`SELECT phone_number FROM division_users WHERE phone_number = $1 AND division_id != $2
+        UNION SELECT institution_users.phone_number FROM institution_users WHERE phone_number = $1
+        UNION SELECT site_users.phone_number FROM site_users WHERE phone_number = $1
+        `,[phone_number,division_id]);
     if(query_result.rows.length !== 0) {
         res.send("Phone number already exists");
         return;
-    }*/
+    }
 
     try {
         await db.query(`UPDATE division_users SET admin_id=$1,division_id=$2,division=$3,email=$4,password=$5,phone_number=$6 WHERE division_id=$7`,[admin_id,division_id,division,email,password,phone_number,division_id]);
@@ -425,30 +423,25 @@ app.post("/modify_institution_users", allowDivisionUsers, async(req,res)=>{
         res.send("Invalid phone number");
         return;
     }
-    /*if ( division_id !== req.session.user_details.division_id) {
+    if ( division_id !== req.session.user_details.division_id) {
         res.send("Invalid division id");
         return;
-    }*/
-    // Check if the Institution id, email, and phone number already exist
-    /*let query_result = await db.query(`SELECT * FROM institution_users WHERE institution_id = $1`,[institution_id]);
-    if (query_result.rows.length !== 0) {
-        res.send("Institution id already exists");
-        return;
     }
+    // Check if the email, and phone number already exist
     // We have to make sure that the email is unique across all the users, because login depends on the email
-    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+    let query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
                                     UNION SELECT email FROM admins WHERE email = '${email}'
-                                    UNION SELECT email FROM institution_users WHERE email = '${email}'
+                                    UNION SELECT email FROM institution_users WHERE email = '${email}' AND institution_id != '${institution_id}'
                                     UNION SELECT email FROM site_users WHERE email = '${email}'`);
     if (query_result.rows.length !== 0) {
         res.send("Email already exists");
         return;
     }
-    query_result = await db.query(`SELECT * FROM institution_users WHERE phone_number = $1`,[phone_number]);
+    query_result = await db.query(`SELECT * FROM institution_users WHERE phone_number = $1 AND institution_id != $2`,[phone_number, institution_id]);
     if (query_result.rows.length !== 0) {
         res.send("Phone number already exists");
         return;
-    }*/
+    }
     try {
         await db.query(`UPDATE institution_users SET division_id=$1,email=$2,password=$3,phone_number=$4,institution_id=$5,country=$6,state=$7,district=$8,taluk=$9,institution_name=$10,village_or_city=$11,pid=$12,khatha_or_property_no=$13,name_of_khathadar=$14,type_of_building=$15 WHERE institution_id=$16`,[division_id,email,password,phone_number,institution_id,country,state,district,taluk,institution_name,village,pid,khatha_no,khathadar_name,building_type,institution_id]);
         console.log("modified institution user details are added successfully");
@@ -530,30 +523,25 @@ app.post("/modify_site_users", allowDivisionUsers, async(req,res)=>{
         res.send("Invalid phone number");
         return;
     }
-    /*if ( division_id !== req.session.user_details.division_id) {
+    if ( division_id !== req.session.user_details.division_id) {
         res.send("Invalid division id");
         return;
-    }*/
-    // Check if the Institution id, email, and phone number already exist
-    /*let query_result = await db.query(`SELECT * FROM institution_users WHERE institution_id = $1`,[institution_id]);
-    if (query_result.rows.length !== 0) {
-        res.send("Institution id already exists");
-        return;
     }
+    // Check if the email, and phone number already exist
     // We have to make sure that the email is unique across all the users, because login depends on the email
-    query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
+    let query_result = await db.query(`SELECT email FROM division_users WHERE email = '${email}'
                                     UNION SELECT email FROM admins WHERE email = '${email}'
                                     UNION SELECT email FROM institution_users WHERE email = '${email}'
-                                    UNION SELECT email FROM site_users WHERE email = '${email}'`);
+                                    UNION SELECT email FROM site_users WHERE email = '${email}' AND site_id != '${site_id}'`);
     if (query_result.rows.length !== 0) {
         res.send("Email already exists");
         return;
     }
-    query_result = await db.query(`SELECT * FROM institution_users WHERE phone_number = $1`,[phone_number]);
+    query_result = await db.query(`SELECT * FROM site_users WHERE phone_number = $1 AND site_id != $2`,[phone_number,site_id]);
     if (query_result.rows.length !== 0) {
         res.send("Phone number already exists");
         return;
-    }*/
+    }
     try {
         await db.query(`UPDATE site_users SET division_id=$1,email=$2,password=$3,phone_number=$4,site_id=$5,country=$6,state=$7,district=$8,taluk=$9,site_name=$10,village_or_city=$11,pid=$12,khatha_or_property_no=$13,name_of_khathadar=$14,type_of_building=$15 WHERE site_id=$16`,[division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village,pid,khatha_no,khathadar_name,building_type,site_id]);
         console.log("modified site user details are added successfully");
