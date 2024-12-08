@@ -83,7 +83,7 @@ app.get("/login", (req,res)=>{
         res.redirect("/home");
         return;
     } else {
-        res.render("login.ejs",addFlashMessages(req));
+        res.render("login.ejs");
         return;
     }
 });
@@ -104,13 +104,14 @@ app.get("/home", allowLoggedIn, async(req,res) => {
     } else if (req.session.isSiteUser) {
         res.redirect("/site");
     } else {
-        res.send("Was not able to redirect to the correct page");
+        req.flash("danger","Was not able to redirect to the correct page");
+        res.send("Was not able to redirect to the correct page"); // This is the only blank page in the app
     }
 });
 
 // Admin page
 app.get("/admin", allowAdmins, (req,res)=>{
-    res.render("admin.ejs",addFlashMessages(req));
+    res.render("admin.ejs");
     return;
 });
 
@@ -158,7 +159,8 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
 
     // Validate the input fields
     if (!validateEmail(email)) {
-        res.send("Invalid email");
+        req.flash("danger", "Invalid email");
+        res.redirect("/modify_division_user?division_id="+division_id);
         return;
     }
     // if (!validatePassword(password)) {
@@ -166,12 +168,14 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
     //     return;
     // }
     if (!phone_number || phone_number.length !== 10 || !/^\d+$/.test(phone_number)) {
-        res.send("Invalid phone number, make sure it's 10 digits");
+        req.flash("danger","Invalid phone number, make sure it's 10 digits");
+        res.redirect("/modify_division_user?division_id="+division_id);
         return;
     }
 
     if(isNaN(admin_id)) {
-        res.send("Invalid admin id");
+        req.flash("danger","Invalid admin id");
+        res.redirect("/modify_division_user?division_id="+division_id);
         return;
     }
     // Check if email, and phone number already exist
@@ -181,7 +185,8 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
         UNION SELECT email FROM institution_users WHERE email = '${email}'
         UNION SELECT email FROM site_users WHERE email = '${email}'`);
     if(query_result.rows.length !== 0) {
-        res.send("Email already exists");
+        req.flash("danger","Email already exists");
+        res.redirect("/modify_division_user?division_id="+division_id);
         return;
     }
     query_result = await db.query(`SELECT phone_number FROM division_users WHERE phone_number = $1 AND division_id != $2
@@ -189,18 +194,20 @@ app.post("/modify_division_user",allowAdmins, async(req,res)=>{
         UNION SELECT site_users.phone_number FROM site_users WHERE phone_number = $1
         `,[phone_number,division_id]);
     if(query_result.rows.length !== 0) {
-        res.send("Phone number already exists");
+        req.flash("danger","Phone number already exists");
+        res.redirect("/modify_division_user?division_id="+division_id);
         return;
     }
 
     try {
         await db.query(`UPDATE division_users SET admin_id=$1,division_id=$2,division=$3,email=$4,password=$5,phone_number=$6 WHERE division_id=$7`,[admin_id,division_id,division,email,password,phone_number,division_id]);
         console.log("division user details are updated successfully");
+        req.flash("success","Division user details updated successfully");
         res.redirect("/list_all_division_users");
         return;
     } catch (error) {
-        console.log("failed to update division user details");
-        res.redirect("/modify_division_user");
+        req.flash("danger","Failed to update division user details. An error occurred");
+        res.redirect("/modify_division_user?division_id="+division_id);
         return;
     }
 
@@ -211,6 +218,7 @@ app.get("/delete_division_user", allowAdmins, async(req,res)=>{
     const division_identification = req.query['division_id'];
     await db.query("DELETE FROM division_users WHERE division_id=$1",[division_identification]);
     console.log("the division user is deleted successfully");
+    req.flash("success","Division user deleted successfully");
     res.redirect("/list_all_division_users");
 });
 
@@ -281,7 +289,8 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
 
     // Validate the input fields
     if (!validateEmail(email)) {
-        res.send("Invalid email");
+        req.flash("danger","Invalid email");
+        res.redirect("/create_new_division");
         return;
     }
     // if (!validatePassword(password)) {
@@ -289,18 +298,22 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
     //     return;
     // }
     if (phone_number.length !== 10 || isNaN(phone_number)) {
-        res.send("Invalid phone number");
+        req.flash("danger","Invalid phone number");
+        res.redirect("/create_new_division");
         return;
     }
 
     if (isNaN(admin_id)) {
-        res.send("Invalid admin id");
+        req.flash("danger","Invalid admin id");
+        res.redirect("/create_new_division");
         return;
     }
     // Check if the division id, email, and phone number already exist
     let query_result = await db.query(`SELECT * FROM division_users WHERE division_id = $1`,[division_id]);
     if (query_result.rows.length !== 0) {
-        res.send("Division id already exists");
+        console.log("Division id already exists");
+        req.flash("danger","Division id already exists");
+        res.redirect("/create_new_division");
         return;
     }
     // We have to make sure that the email is unique across all the users, because login depends on the email
@@ -309,22 +322,28 @@ app.post("/create_new_division", allowAdmins, async(req,res) => {
                                     UNION SELECT email FROM institution_users WHERE email = '${email}'
                                     UNION SELECT email FROM site_users WHERE email = '${email}'`);
     if (query_result.rows.length !== 0) {
-        res.send("Email already exists");
+        console.log("Email already exists");
+        req.flash("danger","Email already exists");
+        res.redirect("/create_new_division");
         return;
     }
     query_result = await db.query(`SELECT * FROM division_users WHERE phone_number = $1`,[phone_number]);
     if (query_result.rows.length !== 0) {
-        res.send("Phone number already exists");
+        console.log("Phone number already exists");
+        req.flash("danger","Phone number already exists");
+        res.redirect("/create_new_division");
         return;
     }
 
     try {
         await db.query(`INSERT INTO division_users (admin_id,division_id,division,email,password,phone_number) VALUES($1,$2,$3,$4,$5,$6)`,[admin_id,division_id,division,email,password,phone_number]);
         console.log("new division user is added successfully");
+        req.flash("success","New division user added successfully");
         res.redirect("/list_all_division_users");
         return;
     } catch (error) {
         console.log("failed to add a new division user");
+        req.flash("danger","Failed to add a new division user");
         res.redirect("/create_new_division");
         return;
     }
@@ -412,7 +431,9 @@ app.post("/modify_institution_users", allowDivisionUsers, async(req,res)=>{
 
     // Validate the input fields
     if (!validateEmail(email)) {
-        res.send("Invalid email");
+        console.log("Invalid email");
+        req.flash("danger","Invalid email");
+        res.redirect("/modify_institution?institution_id="+institution_id);
         return;
     }
     // if (!validatePassword(password)) {
@@ -420,11 +441,15 @@ app.post("/modify_institution_users", allowDivisionUsers, async(req,res)=>{
     //     return;
     // }
     if (phone_number.length !== 10 || isNaN(phone_number)) {
-        res.send("Invalid phone number");
+        console.log("Invalid phone number");
+        req.flash("danger","Invalid phone number");
+        res.redirect("/modify_institution?institution_id="+institution_id);
         return;
     }
     if ( division_id !== req.session.user_details.division_id) {
-        res.send("Invalid division id");
+        console.log("Invalid division id");
+        req.flash("danger","Invalid division id");
+        res.redirect("/modify_institution?institution_id="+institution_id);
         return;
     }
     // Check if the email, and phone number already exist
@@ -434,21 +459,27 @@ app.post("/modify_institution_users", allowDivisionUsers, async(req,res)=>{
                                     UNION SELECT email FROM institution_users WHERE email = '${email}' AND institution_id != '${institution_id}'
                                     UNION SELECT email FROM site_users WHERE email = '${email}'`);
     if (query_result.rows.length !== 0) {
-        res.send("Email already exists");
+        console.log("Email already exists");
+        req.flash("danger","Email already exists");
+        res.redirect("/modify_institution?institution_id="+institution_id);
         return;
     }
     query_result = await db.query(`SELECT * FROM institution_users WHERE phone_number = $1 AND institution_id != $2`,[phone_number, institution_id]);
     if (query_result.rows.length !== 0) {
-        res.send("Phone number already exists");
+        console.log("Phone number already exists");
+        req.flash("danger","Phone number already exists");
+        res.redirect("/modify_institution?institution_id="+institution_id);
         return;
     }
     try {
         await db.query(`UPDATE institution_users SET division_id=$1,email=$2,password=$3,phone_number=$4,institution_id=$5,country=$6,state=$7,district=$8,taluk=$9,institution_name=$10,village_or_city=$11,pid=$12,khatha_or_property_no=$13,name_of_khathadar=$14,type_of_building=$15 WHERE institution_id=$16`,[division_id,email,password,phone_number,institution_id,country,state,district,taluk,institution_name,village,pid,khatha_no,khathadar_name,building_type,institution_id]);
         console.log("modified institution user details are added successfully");
+        req.flash("success","Institution user details modified successfully");
         res.redirect("/list_institution_users_in_division");
         return;
     } catch (error) {
         console.log("failed to add a modified institution user details");
+        req.flash("danger","Failed to modify institution user details");
         res.redirect("/modify_institution_users");
         return;
     }
@@ -457,9 +488,25 @@ app.post("/modify_institution_users", allowDivisionUsers, async(req,res)=>{
 //handling the route to delete the institution user by division user
 app.get("/delete_institution", allowDivisionUsers ,async(req,res)=>{
     const institution_identification = req.query['institution_id'];
-    console.log(institution_identification);
+    if (!institution_identification) {
+        req.flash("warning","The page you are looking for is not available");
+        res.redirect("/list_institution_users_in_division");
+        return;
+    }
+    let query_result = await db.query("SELECT * FROM institution_users WHERE institution_id=$1",[institution_identification]);
+    if (query_result.rows.length === 0) {
+        req.flash("warning","The data you are looking for is not available");
+        res.redirect("/list_institution_users_in_division");
+        return;
+    }
+    if (query_result.rows[0].division_id !== req.session.user_details.division_id) {
+        req.flash("danger","You are not authorized to delete this institution user");
+        res.redirect("/list_institution_users_in_division");
+        return;
+    }
     await db.query("DELETE FROM institution_users WHERE institution_id = $1",[institution_identification]);
     console.log("the institution user is deleted successfully");
+    req.flash("success","Institution user deleted successfully");
     res.redirect("/list_institution_users_in_division");
     return;
 });
@@ -477,14 +524,21 @@ app.get("/list_site_users_in_division", allowDivisionUsers, async(req,res) => {
 //handling the request to modify the site user details by the division user
 app.get("/modify_site", allowDivisionUsers, async(req,res)=>{
     const site_identification = req.query['site_id'];
-    console.log(site_identification);
+
+    // Check if the division user is the owner of the site user
+    const siteCheck = await db.query("SELECT * FROM site_users WHERE site_id = $1 AND division_id = $2", [site_identification, req.session.user_details.division_id]);
+    if (siteCheck.rowCount === 0) {
+        req.flash("danger","Not authorized");
+        res.redirect("/list_site_users_in_division");
+        return;
+    }
     
     const query_result = await db.query("SELECT * FROM site_users WHERE site_id=$1",[site_identification]);
     const retrieved_info = query_result.rows[0];
-    console.log(retrieved_info);
     if(!retrieved_info)
     {
-        console.log("the data you are requesting for is not available");
+        req.flash("danger","The data you are requesting for is not available");
+        res.redirect("/list_site_users_in_division");
         return;
     }
     res.render("modify_site_users.ejs",{
@@ -512,7 +566,9 @@ app.post("/modify_site_users", allowDivisionUsers, async(req,res)=>{
 
     // Validate the input fields
     if (!validateEmail(email)) {
-        res.send("Invalid email");
+        console.log("Invalid email");
+        req.flash("danger","Invalid email");
+        res.redirect("/modify_site?site_id="+site_id);
         return;
     }
     // if (!validatePassword(password)) {
@@ -520,11 +576,15 @@ app.post("/modify_site_users", allowDivisionUsers, async(req,res)=>{
     //     return;
     // }
     if (phone_number.length !== 10 || isNaN(phone_number)) {
-        res.send("Invalid phone number");
+        console.log("Invalid phone number");
+        req.flash("danger","Invalid phone number");
+        res.redirect("/modify_site?site_id="+site_id);
         return;
     }
     if ( division_id !== req.session.user_details.division_id) {
-        res.send("Invalid division id");
+        console.log("Invalid division id");
+        req.flash("danger","Invalid division id");
+        res.redirect("/modify_site?site_id="+site_id);
         return;
     }
     // Check if the email, and phone number already exist
@@ -534,22 +594,28 @@ app.post("/modify_site_users", allowDivisionUsers, async(req,res)=>{
                                     UNION SELECT email FROM institution_users WHERE email = '${email}'
                                     UNION SELECT email FROM site_users WHERE email = '${email}' AND site_id != '${site_id}'`);
     if (query_result.rows.length !== 0) {
-        res.send("Email already exists");
+        console.log("Email already exists");
+        req.flash("danger","Email already exists");
+        res.redirect("/modify_site?site_id="+site_id);
         return;
     }
     query_result = await db.query(`SELECT * FROM site_users WHERE phone_number = $1 AND site_id != $2`,[phone_number,site_id]);
     if (query_result.rows.length !== 0) {
-        res.send("Phone number already exists");
+        console.log("Phone number already exists");
+        req.flash("danger","Phone number already exists");
+        res.redirect("/modify_site?site_id="+site_id);
         return;
     }
     try {
         await db.query(`UPDATE site_users SET division_id=$1,email=$2,password=$3,phone_number=$4,site_id=$5,country=$6,state=$7,district=$8,taluk=$9,site_name=$10,village_or_city=$11,pid=$12,khatha_or_property_no=$13,name_of_khathadar=$14,type_of_building=$15 WHERE site_id=$16`,[division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village,pid,khatha_no,khathadar_name,building_type,site_id]);
         console.log("modified site user details are added successfully");
+        req.flash("success","Site user details modified successfully");
         res.redirect("/list_site_users_in_division");
         return;
     } catch (error) {
         console.log("failed to add a modified site user details");
-        res.redirect("/modify_site_users");
+        req.flash("danger","Failed to modify site user details. An error occurred");
+        res.redirect("/modify_site?site_id="+site_id);
         return;
     }
 });
@@ -557,9 +623,22 @@ app.post("/modify_site_users", allowDivisionUsers, async(req,res)=>{
 //handling the route to delete the site user by the division user
 app.get("/delete_site", allowDivisionUsers, async(req,res)=>{
     const site_identification = req.query['site_id'];
-    console.log(site_identification);
+    if (!site_identification) {
+        req.flash("warning","The page you are looking for is not available");
+        res.redirect("/list_site_users_in_division");
+        return;
+    }
+    // check if the division user is the owner of the site user
+    const siteCheck = await db.query("SELECT * FROM site_users WHERE site_id = $1 AND division_id = $2", [site_identification, req.session.user_details.division_id]);
+    if (siteCheck.rowCount === 0) {
+        req.flash("danger","Not authorized");
+        res.redirect("/list_site_users_in_division");
+        return;
+    }
     await db.query("DELETE FROM site_users WHERE site_id=$1",[site_identification]);
     console.log("the site user is deleted successfully");
+    req.flash("success","Site user deleted successfully");
+    res.redirect("/list_site_users_in_division");
     return;
 });
 
@@ -595,22 +674,25 @@ app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) 
 app.get("/approve_institution_payment_details", allowDivisionUsers, async (req, res) => {
     const sl_no = req.query.sl_no;
     try {
+        // Validate sl_no
+        if (!sl_no || isNaN(sl_no)) {
+            req.flash("danger","Invalid request.");
+            res.redirect("/list_payment_details_in_division");
+            return;
+        }
         // Check if institution is under the division user
         const institutionCheck = await db.query("SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id WHERE institution_payment_details.sl_no = $1 AND institution_users.division_id = $2", [sl_no, req.session.user_details.division_id]);
         if (institutionCheck.rowCount === 0) {
-            res.status(404).send("Not authorized..");
-            return;
-        }
-        // Validate sl_no
-        if (!sl_no) {
-            res.status(400).send("Invalid request. Missing sl_no.");
+            req.flash("danger","Not authorized");
+            res.redirect("/list_payment_details_in_division");
             return;
         }
 
         // Check if the record exists
         const recordCheck = await db.query("SELECT * FROM institution_payment_details WHERE sl_no = $1", [sl_no]);
         if (recordCheck.rowCount === 0) {
-            res.status(404).send("Payment details not found.");
+            req.flash("danger","Payment details not found");
+            res.redirect("/list_payment_details_in_division");
             return;
         }
 
@@ -618,12 +700,12 @@ app.get("/approve_institution_payment_details", allowDivisionUsers, async (req, 
         await db.query("UPDATE institution_payment_details SET approval_status = true WHERE sl_no = $1", [sl_no]);
 
         console.log(`Payment details with sl_no ${sl_no} approved successfully.`);
-        //res.status(200).send("Payment details approved successfully.");
+        req.flash("success","Payment details approved successfully");
         res.redirect("/list_payment_details_in_division");
         return;
     } catch (error) {
         console.error("Error approving payment details:", error);
-        //res.status(500).send("An error occurred while approving payment details.");
+        req.flash("danger","An error occurred while approving payment details");
         res.redirect("/list_payment_details_in_division");
         return;
     }
@@ -634,20 +716,23 @@ app.get("/approve_site_payment_details", allowDivisionUsers, async (req, res) =>
     const sl_no = req.query.sl_no;
     try {
         // Validate sl_no
-        if (!sl_no) {
-            res.status(400).send("Invalid request. Missing sl_no.");
+        if (!sl_no || isNaN(sl_no)) {
+            req.flash("danger","Invalid request.");
+            res.redirect("/list_payment_details_in_division");
             return;
         }
         // Check if the division user is the owner of the site user
         const siteCheck = await db.query("SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id WHERE site_payment_details.sl_no = $1 AND site_users.division_id = $2", [sl_no, req.session.user_details.division_id]);
         if (siteCheck.rowCount === 0) {
-            res.status(404).send("Not authorized.");
+            req.flash("danger","Not authorized");
+            res.redirect("/list_payment_details_in_division");
             return;
         }
         // Check if the record exists
         const recordCheck = await db.query("SELECT * FROM site_payment_details WHERE sl_no = $1", [sl_no]);
         if (recordCheck.rowCount === 0) {
-            res.status(404).send("Payment details not found.");
+            req.flash("danger","Payment details not found");
+            res.redirect("/list_payment_details_in_division");
             return;
         }
 
@@ -655,12 +740,12 @@ app.get("/approve_site_payment_details", allowDivisionUsers, async (req, res) =>
         await db.query("UPDATE site_payment_details SET approval_status = true WHERE sl_no = $1", [sl_no]);
 
         console.log(`Payment details with sl_no ${sl_no} approved successfully.`);
-        //res.status(200).send("Payment details approved successfully.");
+        req.flash("success","Payment details approved successfully");
         res.redirect("/list_payment_details_in_division");
         return;
     } catch (error) {
         console.error("Error approving payment details:", error);
-        //res.status(500).send("An error occurred while approving payment details.");
+        req.flash("danger","An error occurred while approving payment details");
         res.redirect("/list_payment_details_in_division");
         return;
     }
@@ -772,7 +857,9 @@ app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
 
     // Validate the input fields
     if (!validateEmail(email)) {
-        res.send("Invalid email");
+        console.log("Invalid email");
+        req.flash("danger","Invalid email");
+        res.redirect("/create_new_site");
         return;
     }
     // if (!validatePassword(password)) {
@@ -780,17 +867,23 @@ app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
     //     return;
     // }
     if (phone_number.length !== 10 || isNaN(phone_number)) {
-        res.send("Invalid phone number");
+        console.log("Invalid phone number");
+        req.flash("danger","Invalid phone number");
+        res.redirect("/create_new_site");
         return;
     }
     if ( division_id !== req.session.user_details.division_id) {
-        res.send("Invalid division id");
+        console.log("Invalid division id");
+        req.flash("danger","Invalid division id");
+        res.redirect("/create_new_site");
         return;
     }
     // Check if the site id, email, and phone number already exist
     let query_result = await db.query(`SELECT * FROM site_users WHERE site_id = $1`,[site_id]);
     if (query_result.rows.length !== 0) {
-        res.send("site id already exists");
+        console.log("site id already exists");
+        req.flash("danger","Site id already exists");
+        res.redirect("/create_new_site");
         return;
     }
     // We have to make sure that the email is unique across all the users, because login depends on the email
@@ -799,23 +892,29 @@ app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
                                     UNION SELECT email FROM institution_users WHERE email = '${email}'
                                     UNION SELECT email FROM site_users WHERE email = '${email}'`);
     if (query_result.rows.length !== 0) {
-        res.send("Email already exists");
+        console.log("Email already exists");
+        req.flash("danger","Email already exists");
+        res.redirect("/create_new_site");
         return;
     }
     query_result = await db.query(`SELECT * FROM site_users WHERE phone_number = $1`,[phone_number]);
     if (query_result.rows.length !== 0) {
-        res.send("Phone number already exists");
+        console.log("Phone number already exists");
+        req.flash("danger","Phone number already exists");
+        res.redirect("/create_new_site");
         return;
     }
 
     try {
         await db.query(`INSERT INTO site_users (division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village_or_city,pid,khatha_or_property_no,name_of_khathadar,type_of_building) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,[division_id,email,password,phone_number,site_id,country,state,district,taluk,site_name,village,pid,khatha_no,khathadar_name,building_type]);
         console.log("new site user added successfully");
+        req.flash("success","New site user added successfully");
         res.redirect("/list_site_users_in_division");
         return;
     } catch (error) {
         console.log("failed to add a new site user");
         console.log(error);
+        req.flash("danger","Failed to add a new site user");
         res.redirect("/create_new_site");
         return;
     }
@@ -823,7 +922,7 @@ app.post("/create_new_site", allowDivisionUsers, async(req,res)=>{
 
 //handling the /institution route and displaying the home page of institution users
 app.get("/institution",allowInstitutionUsers,(req,res)=>{
-    res.render("institution.ejs",addFlashMessages(req));
+    res.render("institution.ejs");
     return;
 });
 
@@ -874,21 +973,50 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
+    // Pre checks:
+    try {
+        // Make sure that the year isn't already present
+        const yearCheck = await db.query("SELECT * FROM institution_payment_details WHERE payment_year = $1 AND institution_id = $2", [payment_year, institution_id]);
+        if (yearCheck.rowCount !== 0) {
+            console.log("Year already exists");
+            req.flash("danger","Year already exists");
+            res.redirect("/new_institution_payment_details");
+            return;
+        }
+        // Make sure the receipt number isn't already present
+        const receiptCheck = await db.query("SELECT * FROM institution_payment_details WHERE receipt_no_or_date = $1 AND institution_id = $2", [receipt_no, institution_id]);
+        if (receiptCheck.rowCount !== 0) {
+            console.log("Receipt number already exists");
+            req.flash("danger","Receipt number already exists");
+            res.redirect("/new_institution_payment_details");
+            return;
+        }
+    } catch (error) {
+        console.error("Error checking for existing year or receipt number:", error);
+        req.flash("danger","An error occurred while doing preliminary checks and the payment details could not be added. Please contact the administrator.");
+        res.redirect("/new_institution_payment_details");
+        return;
+    }
+
+
+    // Insert the payment details
     try {
             let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks]);
             if(req.file) {
-            const fileBuffer = req.file.buffer;
-            const fileType = req.file.mimetype;
-            const fileName = req.file.originalname;
-            //insert the image into database
-            await db.query(`INSERT INTO institution_bills (sl_no,fileName,filetype,data) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3)`,[fileName,fileType,fileBuffer]);
+                const fileBuffer = req.file.buffer;
+                const fileType = req.file.mimetype;
+                const fileName = req.file.originalname;
+                //insert the image into database
+                await db.query(`INSERT INTO institution_bills (sl_no,fileName,filetype,data) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3)`,[fileName,fileType,fileBuffer]);
             }
             console.log("new institution payment details are added successfully");
+            req.flash("success","New institution payment details added successfully");
             res.redirect("/list_payment_details_in_institution");
             return;
         } catch (error) {
             console.log("failed to add the new institution payment details");
             console.log(error);
+            req.flash("danger","Failed to add new institution payment details. An error occurred.");
             res.redirect("/new_institution_payment_details");
             return;
         }
@@ -897,11 +1025,19 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
 //handling the route to modify the institution payment details by the respective institution user
 app.get("/modify_institution_payment_details", allowInstitutionUsers, async(req,res)=>{
     const sl_no = req.query['sl_no'];
+    if (!sl_no) {
+        console.log("The page you are looking for is not available");
+        req.flash("warning","The page you are looking for is not available");
+        res.redirect("/list_payment_details_in_institution");
+        return;
+    }
     const query_result = await db.query("SELECT * FROM institution_payment_details WHERE sl_no=$1",[sl_no]);
     const retrieved_info = query_result.rows[0];
     if(!retrieved_info)
     {
         console.log("the data you are looking for is not available");
+        req.flash("danger","The data you are looking for is not available");
+        res.redirect("/list_payment_details_in_institution");
         return;
     }
     res.render("modify_institution_payment_details.ejs",{
@@ -936,11 +1072,13 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
             await db.query("UPDATE institution_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0].sl_no,fileBuffer,fileType,fileName]);
             }
             console.log("modified institution payment details are added successfully");
+            req.flash("success","Institution payment details modified successfully");
             res.redirect("/list_payment_details_in_institution");
             return;
     } catch (error) {
         console.log("failed to add the modified institution payment details");
         console.log(error);
+        req.flash("danger","Failed to modify institution payment details. An error occurred");
         res.redirect("/modify_institution_payment_details");
         return;
     }
@@ -949,16 +1087,30 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
 //handling the route to delete the payment details of institution users
 app.get("/delete_payment_details", allowInstitutionUsers, async(req,res)=>{
     const sl_no = req.query['sl_no'];
-    console.log(sl_no);
+    if (!sl_no) {
+        console.log("The page you are looking for is not available");
+        req.flash("warning","The page you are looking for is not available");
+        res.redirect("/list_payment_details_in_institution");
+        return;
+    }
+    // Make sure the institution user is the owner of the payment details
+    const institutionCheck = await db.query("SELECT * FROM institution_payment_details WHERE sl_no = $1 AND institution_id = $2", [sl_no, req.session.user_details.institution_id]);
+    if (institutionCheck.rowCount === 0) {
+        console.log("Not authorized");
+        req.flash("danger","Not authorized");
+        res.redirect("/list_payment_details_in_institution");
+        return;
+    }
     await db.query("DELETE FROM institution_payment_details WHERE sl_no=$1",[sl_no]);
     console.log("the institution payment details are deleted successfully");
+    req.flash("success","Institution payment details deleted successfully");
     res.redirect('/list_payment_details_in_institution');
     return;
 });
 
 //handling the /site route and displaying the home page of site users
-app.get("/site",allowSiteUsers,allowSiteUsers,(req,res)=>{
-    res.render("site.ejs",addFlashMessages(req));
+app.get("/site",allowSiteUsers,(req,res)=>{
+    res.render("site.ejs");
     return;
 });
 
@@ -1010,6 +1162,30 @@ app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), asy
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
+    // Preliminary checks
+    try {
+        // Make sure that the year isn't already present
+        const yearCheck = await db.query("SELECT * FROM site_payment_details WHERE payment_year = $1 AND site_id = $2", [payment_year, site_id]);
+        if (yearCheck.rowCount !== 0) {
+            console.log("Year already exists");
+            req.flash("danger","Year already exists");
+            res.redirect("/new_site_payment_details");
+            return;
+        }
+        // Make sure the receipt number isn't already present
+        const receiptCheck = await db.query("SELECT * FROM site_payment_details WHERE receipt_no_or_date = $1 AND site_id = $2", [receipt_no, site_id]);
+        if (receiptCheck.rowCount !== 0) {
+            console.log("Receipt number already exists");
+            req.flash("danger","Receipt number already exists");
+            res.redirect("/new_site_payment_details");
+            return;
+        }
+    } catch (error) {
+        console.error("Error checking for existing year or receipt number:", error);
+        req.flash("danger","An error occurred while doing preliminary checks and the payment details could not be added. Please contact the administrator.");
+        res.redirect("/new_site_payment_details");
+        return;
+    }
     try {
         let sl_no = await db.query("INSERT INTO site_payment_details (site_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[site_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks]);
         if(req.file) {
@@ -1033,11 +1209,20 @@ app.post("/new_site_payment_details",allowSiteUsers, upload.single('image'), asy
 //handling the route to modify the site payment details by the respective site user
 app.get("/modify_site_payment_details", allowSiteUsers, async(req,res)=>{
     const sl_no = req.query['sl_no'];
+    if (!sl_no) {
+        console.log("The page you are looking for is not available");
+        req.flash("warning","The page you are looking for is not available");
+        res.redirect("/list_payment_details_in_site");
+        return;
+    }
+    // Check if the row exists and that the site users owns the payment details
     const query_result = await db.query("SELECT * FROM site_payment_details WHERE sl_no=$1",[sl_no]);
     const retrieved_info = query_result.rows[0];
-    if(!retrieved_info)
+    if(!retrieved_info || retrieved_info.site_id !== req.session.user_details.site_id)
     {
         console.log("the data you are looking for is not available");
+        req.flash("danger","The data you are looking for is not available");
+        res.redirect("/list_payment_details_in_site");
         return;
     }
     res.render("modify_site_payment_details.ejs",{
@@ -1072,11 +1257,13 @@ app.post("/modify_site_payment_details", allowSiteUsers, upload.single('image'),
             await db.query("UPDATE site_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0].sl_no,fileBuffer,fileType,fileName]);
             }
             console.log("modified site payment details are added successfully");
+            req.flash("success","Site payment details modified successfully");
             res.redirect("/list_payment_details_in_site");
             return;
     } catch (error) {
         console.log("failed to add the modified site payment details");
         console.log(error);
+        req.flash("danger","Failed to modify site payment details. An error occurred");
         res.redirect("/modify_site_payment_details");
         return;
     }
@@ -1085,10 +1272,32 @@ app.post("/modify_site_payment_details", allowSiteUsers, upload.single('image'),
 //handling the route to delete the payment details of the site users
 app.get("/delete_site_payment_details", allowSiteUsers, async(req,res)=>{
     const sl_no = req.query['sl_no'];
-    console.log(sl_no);
-    await db.query("DELETE FROM site_payment_details WHERE sl_no=$1",[sl_no]);
-    console.log("the site payment details are deleted successfully");
-    res.redirect("/list_payment_details_in_site");
+    
+    if (!sl_no) {
+        console.log("The page you are looking for is not available");
+        req.flash("warning","The page you are looking for is not available");
+        res.redirect("/list_payment_details_in_site");
+        return;
+    }
+    // Check if the site user is the owner of the payment details
+    const siteCheck = await db.query("SELECT * FROM site_payment_details WHERE sl_no = $1 AND site_id = $2", [sl_no, req.session.user_details.site_id]);
+    if (siteCheck.rowCount === 0) {
+        console.log("Not authorized");
+        req.flash("danger","Not authorized");
+        res.redirect("/list_payment_details_in_site");
+        return;
+    }
+    // Delete the payment details
+    try {
+        await db.query("DELETE FROM site_payment_details WHERE sl_no=$1",[sl_no]);
+        console.log("the site payment details are deleted successfully");
+        req.flash("success","Site payment details deleted successfully");
+        res.redirect("/list_payment_details_in_site");
+    } catch (error) {
+        console.error("Error deleting site payment details:", error);
+        req.flash("danger","An error occurred while deleting site payment details");
+        res.redirect("/list_payment_details_in_site");
+    }
     return;
 });
 
@@ -1103,14 +1312,17 @@ app.get("/view_image/:sl_no", allowLoggedIn, async(req,res)=>{
     const query_result = await db.query("SELECT * FROM institution_bills WHERE sl_no = $1",[sl_no]);
     const query_result_site = await db.query("SELECT * FROM site_bills WHERE sl_no = $1",[sl_no]);
     if (query_result.rows.length === 0 && query_result_site.rows.length === 0) {
-        res.send("No image found");
+        req.flash("danger","No image found");
+        console.log("No image found");
+        res.redirect("/home");
         return;
     }
     // Check if institution user is authorized to view the image
     if (!req.session.isAdmin && !req.session.isDivisionUser && req.session.isInstitutionUser && query_result.rows.length !== 0) {
         const check_owner = await db.query("SELECT institution_id FROM institution_payment_details WHERE sl_no = $1",[sl_no]);
         if (check_owner.rows[0].institution_id !== req.session.user_details?.institution_id) {
-            res.send("You are not authorized to view this image");
+            req.flash("danger","You are not authorized to view this image");
+            res.redirect("/home");
             return;
         }
     }
@@ -1118,7 +1330,8 @@ app.get("/view_image/:sl_no", allowLoggedIn, async(req,res)=>{
     if (!req.session.isAdmin && !req.session.isDivisionUser && req.session.isSiteUser &&query_result_site.rows.length !== 0) {
         const check_owner = await db.query("SELECT site_id FROM site_payment_details WHERE sl_no = $1",[sl_no]);
         if (check_owner.rows[0].site_id !== req.session.user_details?.site_id) {
-            res.send("You are not authorized to view this image");
+            req.flash("You are not authorized to view this image");
+            res.redirect("/home");
             return;
         }
     }
@@ -1126,7 +1339,8 @@ app.get("/view_image/:sl_no", allowLoggedIn, async(req,res)=>{
     if (!req.session.isAdmin && req.session.isDivisionUser && query_result.rows.length !== 0) {
         const check_owner = await db.query("SELECT division_id FROM institution_users JOIN institution_payment_details ON institution_users.institution_id=institution_payment_details.institution_id WHERE sl_no = $1",[sl_no]);
         if (check_owner.rows[0].division_id !== req.session.user_details?.division_id) {
-            res.send("You are not authorized to view this image");
+            req.flash("You are not authorized to view this image");
+            res.redirect("/home");
             return;
         }
     }
@@ -1134,7 +1348,8 @@ app.get("/view_image/:sl_no", allowLoggedIn, async(req,res)=>{
     if (!req.session.isAdmin && req.session.isDivisionUser && query_result_site.rows.length !== 0) {
         const check_owner = await db.query("SELECT division_id FROM site_users JOIN site_payment_details ON site_users.site_id=site_payment_details.site_id WHERE sl_no = $1",[sl_no]);
         if (check_owner.rows[0].division_id !== req.session.user_details?.division_id) {
-            res.send("You are not authorized to view this image");
+            req.flash("You are not authorized to view this image");
+            res.redirect("/home");
             return;
         }
     }
@@ -1157,34 +1372,49 @@ app.get("/view_image/:sl_no", allowLoggedIn, async(req,res)=>{
 
 //handling the get route of generating the comprehensive report by admin
 app.get("/comprehensive_report_admin",allowAdmins,async(req,res)=>{
-    const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no`);
-    const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no`);
-    const institution_payment_details_in_division = institution_payment_details_query_result.rows;
-    const site_payment_details_in_division = site_payment_details_query_result.rows;
-    res.render("comprehensive_report_admin.ejs",{
-        institution_payment_details_in_division,
-        site_payment_details_in_division
-    });
+    try {
+        const institution_payment_details_query_result = await db.query(`SELECT * FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no`);
+        const site_payment_details_query_result = await db.query(`SELECT * FROM site_payment_details JOIN site_users ON site_payment_details.site_id = site_users.site_id LEFT JOIN site_bills ON site_payment_details.sl_no = site_bills.sl_no`);
+        const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+        const site_payment_details_in_division = site_payment_details_query_result.rows;
+        res.render("comprehensive_report_admin.ejs",{
+            institution_payment_details_in_division,
+            site_payment_details_in_division
+        });
+    } catch (error) {
+        console.log("Failed to generate comprehensive report");
+        console.log(error);
+        req.flash("danger","Failed to generate comprehensive report");
+        res.redirect("/home");
+    }
     return;
 });
 
 //handling the get route of generating the local report by admin
 app.get("/local_report_admin",allowAdmins,async(req,res)=>{
-    const institution_payment_details_query_result = await db.query(`SELECT khatha_or_property_no,institution_name,institution_id,name_of_khathadar,pid FROM institution_users`);
-    const site_payment_details_query_result = await db.query(`SELECT khatha_or_property_no,site_name,site_id,name_of_khathadar,pid FROM site_users`);
-    const institution_payment_details = institution_payment_details_query_result.rows;
-    const site_payment_details = site_payment_details_query_result.rows;
-    res.render("local_report_admin.ejs",{
-        institution_payment_details : institution_payment_details,
-        site_payment_details : site_payment_details
-    });
+    try {
+        const institution_payment_details_query_result = await db.query(`SELECT khatha_or_property_no,institution_name,institution_id,name_of_khathadar,pid FROM institution_users`);
+        const site_payment_details_query_result = await db.query(`SELECT khatha_or_property_no,site_name,site_id,name_of_khathadar,pid FROM site_users`);
+        const institution_payment_details = institution_payment_details_query_result.rows;
+        const site_payment_details = site_payment_details_query_result.rows;
+        res.render("local_report_admin.ejs",{
+            institution_payment_details : institution_payment_details,
+            site_payment_details : site_payment_details
+        });
+    } catch (error) {
+        console.log("Failed to generate local report");
+        console.log(error);
+        req.flash("danger","Failed to generate local report");
+        res.redirect("/home");
+    }
     return;
 });
 
 //handling the get route to generate the comprehensive report by divison user
+
+// NOT WORKING.....................
 app.get("/comprehensive_report_division",allowDivisionUsers,async(req,res)=>{
-    let div_id = req.session.user_details.division_id;
-    let division_id = div_id.toUpperCase();
+    let division_id = req.session.user_details.division_id;
     const division_institution_payment_details_query_result = await db.query("SELECT division_users.division_id,institution_users.institution_id,institution_payment_details.* FROM division_users LEFT JOIN institution_users ON division_users.division_id = institution_users.division_id LEFT JOIN institution_payment_details ON institution_users.institution_id = institution_payment_details.institution_id WHERE division_users.division_id = $1",[division_id]);
     const division_site_payment_details_query_result = await db.query("SELECT division_users.division_id,site_users.site_id,site_payment_details.* FROM division_users LEFT JOIN site_users ON division_users.division_id = site_users.division_id LEFT JOIN site_payment_details ON site_users.site_id = site_payment_details.site_id WHERE division_users.division_id = $1",[division_id]);
     const division_institution_payment_details = division_institution_payment_details_query_result.rows;
@@ -1198,9 +1428,11 @@ app.get("/comprehensive_report_division",allowDivisionUsers,async(req,res)=>{
 
 
 //handling the get route to generate the local report by division user
+
+// NOT WORKING.....................
+
 app.get("/local_report_division",allowDivisionUsers,async(req,res)=>{
-    let div_id = req.session.user_details.division_id;
-    let division_id = div_id.toUpperCase();
+    let division_id = req.session.user_details.division_id;
     const division_institution_payment_details_query_result = await db.query("SELECT division_users.division_id,institution_users.institution_id,institution_users.institution_name,institution_users.khatha_or_property_no,institution_users.name_of_khathadar,institution_users.pid FROM division_users LEFT JOIN institution_users ON division_users.division_id = institution_users.division_id WHERE division_users.division_id = $1",[division_id]);
     const division_site_payment_details_query_result = await db.query("SELECT division_users.division_id,site_users.site_id,site_users.site_name,site_users.khatha_or_property_no,site_users.name_of_khathadar,site_users.pid FROM division_users LEFT JOIN site_users ON division_users.division_id = site_users.division_id WHERE division_users.division_id = $1",[division_id]);
     const division_institution_payment_details = division_institution_payment_details_query_result.rows;
@@ -1214,8 +1446,7 @@ app.get("/local_report_division",allowDivisionUsers,async(req,res)=>{
 
 //handling the get route to generate the comprehensive report for institution user
 app.get("/comprehensive_report_institution",allowInstitutionUsers,async(req,res)=>{
-    let ins_id = req.session.user_details.institution_id;
-    let institution_id = ins_id.toUpperCase();
+    let institution_id = req.session.user_details.institution_id;
     const institution_report_query_result = await db.query("SELECT institution_users.institution_id,institution_users.institution_name,institution_users.khatha_or_property_no,institution_users.pid,institution_payment_details.* FROM institution_users LEFT JOIN institution_payment_details ON institution_users.institution_id = institution_payment_details.institution_id WHERE institution_users.institution_id=$1",[institution_id]);
     const comprehensive_institution_report = institution_report_query_result.rows;
     res.render("comprehensive_report_institution.ejs",{
@@ -1226,8 +1457,7 @@ app.get("/comprehensive_report_institution",allowInstitutionUsers,async(req,res)
 
 //handling the get route to generate the local report for the institution user
 app.get("/local_report_institution",allowInstitutionUsers,async(req,res)=>{
-    let ins_id = req.session.user_details.institution_id;
-    let institution_id = ins_id.toUpperCase();
+    let institution_id = req.session.user_details.institution_id;
     const local_instituion_report_query_result = await db.query(" SELECT institution_id,institution_name,khatha_or_property_no,name_of_khathadar,pid FROM institution_users WHERE institution_id=$1",[institution_id]);
     const local_institution_report = local_instituion_report_query_result.rows;
     res.render("local_report_institution.ejs",{
@@ -1238,8 +1468,7 @@ app.get("/local_report_institution",allowInstitutionUsers,async(req,res)=>{
 
 //handling the get route to generate the comprehensive report for the site user
 app.get("/comprehensive_report_site",allowSiteUsers,async(req,res)=>{
-    let s_id = req.session.user_details.site_id;
-    let site_id = s_id.toUpperCase();
+    let site_id = req.session.user_details.site_id;
     const comprehensive_site_report_query_result = await db.query("SELECT site_users.site_id,site_users.site_name,site_users.pid,site_users.khatha_or_property_no,site_payment_details.* FROM site_users LEFT JOIN site_payment_details ON site_users.site_id = site_payment_details.site_id WHERE site_users.site_id=$1",[site_id]);
     const comprehensive_site_report = comprehensive_site_report_query_result.rows;
     res.render("comprehensive_report_site.ejs",{
@@ -1250,8 +1479,7 @@ app.get("/comprehensive_report_site",allowSiteUsers,async(req,res)=>{
 
 //handling the get route to generate the local report for the site user
 app.get("/local_report_site",allowSiteUsers,async(req,res)=>{
-    let s_id = req.session.user_details.site_id;
-    let site_id = s_id.toUpperCase();
+    let site_id = req.session.user_details.site_id;
     const local_site_report_query_result = await db.query("SELECT site_id,site_name,khatha_or_property_no,name_of_khathadar,pid FROM site_users WHERE site_id=$1",[site_id]);
     const local_site_report = local_site_report_query_result.rows;
     res.render("local_report_site.ejs",{
