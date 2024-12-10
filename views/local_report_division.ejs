@@ -22,30 +22,6 @@
     <% }) %>
 </table>
 </div>
-<h3>Site User's Report</h3>
-<div class="overflow-scroll">
-<table>
-    <tr>
-        <th>DIVISION ID</th>
-        <th>SITE ID</th>
-        <th>SITE NAME</th>
-        <th>KHATHA OR PROPERTY NUMBER</th>
-        <th>KHATHADAR NAME</th>
-        <th>PROPERTY ID</th>
-        
-    </tr>
-    <% division_site_payment_details.forEach((entry)=>{ %>
-        <tr>
-            <td><%=entry.division_id%></td>
-            <td><%=entry.site_id%></td>
-            <td><%=entry.site_name%></td>
-            <td><%=entry.khatha_or_property_no%></td>
-            <td><%=entry.name_of_khathadar%></td>
-            <td><%=entry.pid%></td>
-        </tr>
-    <% }) %>
-</table>
-</div>
 <button id="print-report" class="btn btn-primary">Print Report</button>
 <style>
     @media print {

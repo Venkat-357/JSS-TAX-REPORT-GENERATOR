@@ -26,8 +26,6 @@
                 <h5><span class="badge text-bg-secondary">Logged in as Division <%= user_details.division %></span></h5>
             <% } else if (isInstitutionUser) {%>
                 <h5><span class="badge text-bg-secondary">Logged in as Institution <%= user_details.institution %></span></h5>
-            <% } else if (isSiteUser) {%>
-                <h5><span class="badge text-bg-secondary">Logged in as Site <%= user_details.site %></span></h5>
             <% } %>
             <a class="btn btn-danger" href="/logout">Logout</a>
         <% } else { %>

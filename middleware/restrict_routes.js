@@ -23,13 +23,6 @@ export function allowInstitutionUsers(req, res, next) {
     res.redirect('/login');
 }
 
-export function allowSiteUsers(req, res, next) {
-    if (req.session.isLoggedIn && req.session.isSiteUser) {
-        return next();
-    }
-    res.redirect('/login');
-}
-
 export function allowAdminsAndDivisionUsers(req, res, next) {
     if (req.session.isLoggedIn && (req.session.isAdmin || req.session.isDivisionUser)) {
         return next();

@@ -7,7 +7,6 @@ export function setAuthStatus(req, res, next) {
         res.locals.isAdmin = req.session.isAdmin;
         res.locals.isDivisionUser = req.session.isDivisionUser;
         res.locals.isInstitutionUser = req.session.isInstitutionUser;
-        res.locals.isSiteUser = req.session.isSiteUser
     }
     next();
 }

@@ -13,7 +13,6 @@ export const login = async(req,res,db) => {
             req.session.isAdmin = true;
             req.session.isDivisionUser = false;
             req.session.isInstitutionUser = false;
-            req.session.isSiteUser = false;
             req.session.user_details = {
                 admin_id : admin_id,
                 email : user.email
@@ -36,7 +35,6 @@ export const login = async(req,res,db) => {
             req.session.isAdmin = false;
             req.session.isDivisionUser = true;
             req.session.isInstitutionUser = false;
-            req.session.isSiteUser = false;
             req.session.user_details = {
                 division_id : user.division_id,
                 division : user.division,
@@ -60,7 +58,6 @@ export const login = async(req,res,db) => {
             req.session.isAdmin = false;
             req.session.isDivisionUser = false;
             req.session.isInstitutionUser = true;
-            req.session.isSiteUser = false;
             req.session.user_details = {
                 institution_id : user.institution_id,
                 institution : user.institution_name,
@@ -68,30 +65,6 @@ export const login = async(req,res,db) => {
             };
             req.flash("success", "Logged in successfully");
             res.redirect("/institution");
-            return;
-        } else {
-            req.flash("danger", "Invalid credentials");
-            res.redirect("/login");
-            return;
-        }
-    }
-    // For site users
-    query_result = await db.query(`SELECT * FROM site_users WHERE email = '${email}'`);
-    if (query_result.rows.length > 0) {
-        const user = query_result.rows[0];
-        if (user.password === password) {
-            req.session.isLoggedIn = true;
-            req.session.isAdmin = false;
-            req.session.isDivisionUser = false;
-            req.session.isInstitutionUser = false;
-            req.session.isSiteUser = true;
-            req.session.user_details = {
-                site_id : user.site_id,
-                site : user.site_name,
-                email : user.email,
-            };
-            req.flash("success", "Logged in successfully");
-            res.redirect("/site");
             return;
         } else {
             req.flash("danger", "Invalid credentials");
