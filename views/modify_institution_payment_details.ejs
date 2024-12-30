@@ -19,12 +19,42 @@
     
     <div class="form-group">
         <label for="dimension-of-building-area-in-sqft">DIMENSION OF BUILDING AREA IN SQFT :</label>
-        <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" value="<%=retrieved_info.dimension_of_building_area_sqft%>" oninput="calculateSum()" min="0"required>
+        <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" value="<%=retrieved_info.dimension_of_building_area_sqft%>" oninput="calculateSum()" min="0" required>
     </div>
     
     <div class="form-group">
         <label for="total-dimension">TOTAL DIMENSION IN SQFT :</label>
         <input type="number" id="total-dimension" name="total-dimension" value="<%=retrieved_info.total_dimension_in_sqft%>" class="gray-out" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="no-of-floors">NO OF FLOORS :</label>
+        <input type="number" id="no-of-floors" name="no-of-floors" value="<%=retrieved_info.number_of_floors%>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="basement-floor-in-sqft">BASEMENT FLOOR IN SQFT :</label>
+        <input type="number" id="basement-floor-in-sqft" name="basement-floor-in-sqft" value="<%=retrieved_info.basement_floor_sqft%>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="ground-floor-in-sqft">GROUND FLOOR IN SQFT :</label>
+        <input type="number" id="ground-floor-in-sqft" name="ground-floor-in-sqft" value="<%=retrieved_info.ground_floor_sqft%>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="first-floor-in-sqft">FIRST FLOOR IN SQFT :</label>
+        <input type="number" id="first-floor-in-sqft" name="first-floor-in-sqft" value="<%=retrieved_info.first_floor_sqft%>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="second-floor-in-sqft">SECOND FLOOR IN SQFT :</label>
+        <input type="number" id="second-floor-in-sqft" name="second-floor-in-sqft" value="<%=retrieved_info.second_floor_sqft%>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="third-floor-in-sqft">THIRD FLOOR IN SQFT :</label>
+        <input type="number" id="third-floor-in-sqft" name="third-floor-in-sqft" value="<%=retrieved_info.third_floor_sqft%>" required>
     </div>
 
     <div class="form-group">
@@ -34,7 +64,7 @@
 
     <div class="form-group">
     <label for="property-tax">PROPERTY TAX :</label>
-    <input type="number" id="property-tax" name="property-tax" value="<%=retrieved_info.property_tax%>" required>
+    <input type="number" id="property-tax" name="property-tax" value="<%=retrieved_info.property_tax%>" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
@@ -44,22 +74,22 @@
 
     <div class="form-group">
     <label for="service-tax">SERVICE TAX :</label>
-    <input type="number" id="service-tax" name="service-tax" value="<%=retrieved_info.service_tax%>" required>
+    <input type="number" id="service-tax" name="service-tax" value="<%=retrieved_info.service_tax%>" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
     <label for="cesses">CESSES :</label>
-    <input type="number" id="cesses" name="cesses" value="<%=retrieved_info.cesses%>" required>
+    <input type="number" id="cesses" name="cesses" value="<%=retrieved_info.cesses%>" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
     <label for="interest">INTEREST :</label>
-    <input type="number" id="interest" name="interest" value="<%=retrieved_info.interest%>" required>
+    <input type="number" id="interest" name="interest" value="<%=retrieved_info.interest%>" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
     <label for="total-amount">TOTAL AMOUNT</label>
-    <input type="number" id="total-amount" name="total-amount" value="<%=retrieved_info.total_amount%>" required>
+    <input type="number" id="total-amount" name="total-amount" value="<%=retrieved_info.total_amount%>" class="gray-out" readonly>
     </div>
 
     <div class="form-group">

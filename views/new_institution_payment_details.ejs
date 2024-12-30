@@ -28,13 +28,43 @@
     </div>
 
     <div class="form-group">
+        <label for="no-of-floors">NO OF FLOORS :</label>
+        <input type="number" id="no-of-floors" name="no-of-floors" required>
+    </div>
+
+    <div class="form-group">
+        <label for="basement-floor-in-sqft">BASEMENT FLOOR IN SQFT :</label>
+        <input type="number" id="basement-floor-in-sqft" name="basement-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="ground-floor-in-sqft">GROUND FLOOR IN SQFT :</label>
+        <input type="number" id="ground-floor-in-sqft" name="ground-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="first-floor-in-sqft">FIRST FLOOR IN SQFT :</label>
+        <input type="number" id="first-floor-in-sqft" name="first-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="second-floor-in-sqft">SECOND FLOOR IN SQFT :</label>
+        <input type="number" id="second-floor-in-sqft" name="second-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="third-floor-in-sqft">THIRD FLOOR IN SQFT :</label>
+        <input type="number" id="third-floor-in-sqft" name="third-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
         <label for="usage-of-building">USAGE OF BUILDING :</label>
         <input type="text" id="usage-of-building" name="usage-of-building" required>
     </div>
 
     <div class="form-group">
     <label for="property-tax">PROPERTY TAX :</label>
-    <input type="number" id="property-tax" name="property-tax" required>
+    <input type="number" id="property-tax" name="property-tax" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
@@ -44,22 +74,22 @@
 
     <div class="form-group">
     <label for="service-tax">SERVICE TAX :</label>
-    <input type="number" id="service-tax" name="service-tax" required>
+    <input type="number" id="service-tax" name="service-tax" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
     <label for="cesses">CESSES :</label>
-    <input type="number" id="cesses" name="cesses" required>
+    <input type="number" id="cesses" name="cesses" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
     <label for="interest">INTEREST :</label>
-    <input type="number" id="interest" name="interest" required>
+    <input type="number" id="interest" name="interest" oninput="calculateTotalAmount()" min="0" required>
     </div>
 
     <div class="form-group">
-    <label for="total-amount">TOTAL AMOUNT :</label>
-    <input type="number" id="total-amount" name="total-amount" required>
+    <label for="total-amount">TOTAL AMOUNT (Automatically calculated) :</label>
+    <input type="number" id="total-amount" name="total-amount" class="gray-out" readonly>
     </div>
 
     <div class="form-group">

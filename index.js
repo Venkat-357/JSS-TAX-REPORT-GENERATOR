@@ -237,7 +237,7 @@ app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
     // NOTE: LEFT JOIN TO DISPLAY EVEN IF THE BILL IS NOT UPLOADED
     //dispay the payment details if and only if the current year details are provided else display all the details
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no");
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no");
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         res.render("list_all_payment_details.ejs",{
             institution_payment_details_in_division : institution_payment_details_in_division,
@@ -245,7 +245,7 @@ app.get("/list_all_payment_details", allowAdmins, async(req,res)=>{
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.payment_year = $1",[selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.payment_year = $1",[selected_year]);
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         res.render("list_all_payment_details.ejs",{
             institution_payment_details_in_division : institution_payment_details_in_division,
@@ -512,7 +512,7 @@ app.get("/delete_institution", allowDivisionUsers ,async(req,res)=>{
 app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) => {
     const selected_year = req.query?.selected_year;
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query(`SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
+        const institution_payment_details_query_result = await db.query(`SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = '${req.session.user_details.division_id}'`);
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_division.ejs",{
             institution_payment_details_in_division,
@@ -520,7 +520,7 @@ app.get("/list_payment_details_in_division", allowDivisionUsers, async(req,res) 
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = $1 AND institution_payment_details.payment_year=$2",[req.session.user_details.division_id,selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.division_id = $1 AND institution_payment_details.payment_year=$2",[req.session.user_details.division_id,selected_year]);
         const institution_payment_details_in_division = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_division.ejs",{
             institution_payment_details_in_division,
@@ -656,7 +656,7 @@ app.get("/institution",allowInstitutionUsers,(req,res)=>{
 app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req,res)=>{
     const selected_year = req.query?.selected_year;
     if(!selected_year) {
-        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no  FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1",[req.session.user_details.institution_id]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name  FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1",[req.session.user_details.institution_id]);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_institution.ejs",{
             information : information,
@@ -664,7 +664,7 @@ app.get("/list_payment_details_in_institution", allowInstitutionUsers, async(req
         });
         return;
     } else {
-        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
+        const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_users.institution_id = $1 AND institution_payment_details.payment_year = $2",[req.session.user_details.institution_id,selected_year]);
         const information = institution_payment_details_query_result.rows;
         res.render("list_payment_details_in_institution.ejs",{
             information : information,
@@ -699,6 +699,12 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
+    const no_of_floors = req.body[`no-of-floors`];
+    const basement_floor = req.body[`basement-floor-in-sqft`];
+    const ground_floor = req.body[`ground-floor-in-sqft`];
+    const first_floor = req.body[`first-floor-in-sqft`];
+    const second_floor = req.body[`second-floor-in-sqft`];
+    const third_floor = req.body[`third-floor-in-sqft`];
     // Pre checks:
     try {
         // Make sure that the year isn't already present
@@ -727,7 +733,7 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
 
     // Insert the payment details
     try {
-            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,total_amount,remarks) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks]);
+            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,total_amount,remarks,number_of_floors,basement_floor_sqft,ground_floor_sqft,first_floor_sqft,second_floor_sqft,third_floor_sqft) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks,no_of_floors,basement_floor,ground_floor,first_floor,second_floor,third_floor]);
             if(req.file) {
                 const fileBuffer = req.file.buffer;
                 const fileType = req.file.mimetype;
@@ -788,8 +794,14 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
     const interest = req.body.interest;
     const total_amount = req.body[`total-amount`];
     const remarks = req.body.remarks;
+    const no_of_floors = req.body[`no-of-floors`];
+    const basement_floor = req.body[`basement-floor-in-sqft`];
+    const ground_floor = req.body[`ground-floor-in-sqft`];
+    const first_floor = req.body[`first-floor-in-sqft`];
+    const second_floor = req.body[`second-floor-in-sqft`];
+    const third_floor = req.body[`third-floor-in-sqft`];
     try {
-        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,usage_of_building=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15 WHERE institution_id=$16 RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks,institution_id]);
+        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,usage_of_building=$10,to_which_department_paid=$11,cesses=$12,interest=$13,total_amount=$14,remarks=$15,number_of_floors=$16,basement_floor_sqft=$17,ground_floor_sqft=$18,first_floor_sqft=$19,second_floor_sqft=$20,third_floor_sqft=$21 WHERE institution_id=$22 RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,total_amount,remarks,no_of_floors,basement_floor,ground_floor,first_floor,second_floor,third_floor,institution_id]);
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;

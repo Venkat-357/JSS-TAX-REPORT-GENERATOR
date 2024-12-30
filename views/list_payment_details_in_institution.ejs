@@ -22,9 +22,16 @@
 <table>
     <tr>
         <th>INSTITUTION ID</th>
+        <th>INSTITUTION NAME</th>
         <th>DIMENSION OF VACANT AREA IN SQFT</th>
         <th>DIMENSION OF BUILDING AREA IN SQFT</th>
         <th>TOTAL DIMENSION IN SQFT</th>
+        <th>NO OF FLOORS</th>
+        <th>BASEMENT FLOOR IN SQFT</th>
+        <th>GROUND FLOOR IN SQFT</th>
+        <th>FIRST FLOOR IN SQFT</th>
+        <th>SECOND FLOOR IN SQFT</th>
+        <th>THIRD FLOOR IN SQFT</th>
         <th>USAGE OF BUILDING</th>
         <th>PROPERTY TAX</th>
         <th>REBATE</th>
@@ -41,9 +48,16 @@
     <% information.forEach((entry)=>{ %>
         <tr>
             <td><%=entry.institution_id%></td>
+            <td><%=entry.institution_name%></td>
             <td><%=entry.dimension_of_vacant_area_sqft%></td>
             <td><%=entry.dimension_of_building_area_sqft%></td>
             <td><%=entry.total_dimension_in_sqft%></td>
+            <td><%=entry.number_of_floors%></td>
+            <td><%=entry.basement_floor_sqft%></td>
+            <td><%=entry.ground_floor_sqft%></td>
+            <td><%=entry.first_floor_sqft%></td>
+            <td><%=entry.second_floor_sqft%></td>
+            <td><%=entry.third_floor_sqft%></td>
             <td><%=entry.usage_of_building%></td>
             <td><%=entry.property_tax%></td>
             <td><%=entry.rebate%></td>
