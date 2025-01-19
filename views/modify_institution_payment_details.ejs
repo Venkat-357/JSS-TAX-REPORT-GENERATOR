@@ -28,8 +28,16 @@
     </div>
 
     <div class="form-group">
-        <label for="no-of-floors">NO OF FLOORS :</label>
-        <input type="number" id="no-of-floors" name="no-of-floors" value="<%=retrieved_info.number_of_floors%>" required>
+        <label for="number_of_floors">NO OF FLOORS :</label>
+        <select type="number" id="number_of_floors" name="number_of_floors" required>
+            <option value="" disabled>Select a number</option>
+            <option selected value="<%= retrieved_info.number_of_floors %>">Previously Selected: <%= retrieved_info.number_of_floors %></option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
     </div>
 
     <div class="form-group">
@@ -68,7 +76,7 @@
     </div>
 
     <div class="form-group">
-    <label for="rebate">REBATE :</label>
+    <label for="rebate">REBATE (NOT INCLUDED IN TOTAL AMOUNT):</label>
     <input type="number" id="rebate" name="rebate" value="<%=retrieved_info.rebate%>" required>
     </div>
 
@@ -85,6 +93,11 @@
     <div class="form-group">
     <label for="interest">INTEREST :</label>
     <input type="number" id="interest" name="interest" value="<%=retrieved_info.interest%>" oninput="calculateTotalAmount()" min="0" required>
+    </div>
+
+    <div class="form-group">
+    <label for="total-amount">PENALTY/ARREARS :</label>
+    <input type="number" id="penalty-arrears" name="penalty-arrears" oninput="calculateTotalAmount()" min="0" value="<%=retrieved_info.penalty_arrears%>" required>
     </div>
 
     <div class="form-group">
@@ -130,7 +143,7 @@
 
     <div class="form-group">
     <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif/.pdf):</label>
-    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif, image/pdf" value="<%=retrieved_info.image%>" required>
+    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif, application/pdf" value="<%=retrieved_info.image%>" required>
     </div>
     
     <div class="submit-button">

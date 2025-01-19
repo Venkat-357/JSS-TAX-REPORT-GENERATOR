@@ -68,6 +68,7 @@ const createTablesIfNotExists = (db) => {
             to_which_department_paid character varying(200) COLLATE pg_catalog."default" NOT NULL,
             cesses integer NOT NULL,
             interest integer NOT NULL,
+            penalty_arrears integer NOT NULL,
             total_amount integer NOT NULL,
             remarks character varying(1000) COLLATE pg_catalog."default" NOT NULL,
             approval_status boolean DEFAULT false NOT NULL,

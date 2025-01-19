@@ -19,7 +19,8 @@
             const serviceTax = parseFloat(document.getElementById('service-tax').value) || 0;
             const cesses = parseFloat(document.getElementById('cesses').value) || 0;
             const interest = parseFloat(document.getElementById('interest').value) ||0;
-            const totalAmount = propertyTax+serviceTax+cesses+interest;
+            const penalty_arrears = parseFloat(document.getElementById('penalty-arrears').value) || 0;
+            const totalAmount = propertyTax+serviceTax+cesses+interest+penalty_arrears;
             document.getElementById('total-amount').value = totalAmount;
 
         }
