@@ -11,7 +11,7 @@ const createTablesIfNotExists = (db, p_env) => {
         );
 
         db.query(`CREATE TABLE IF NOT EXISTS public.division_users(
-            admin_id integer,
+            admin_id integer NOT NULL,
             division_id character varying(200),
             division character varying(200) COLLATE pg_catalog."default" NOT NULL,
             email character varying(200) COLLATE pg_catalog."default" NOT NULL,
@@ -27,7 +27,7 @@ const createTablesIfNotExists = (db, p_env) => {
         );
 
         db.query(`CREATE TABLE IF NOT EXISTS public.institution_users(
-            division_id character varying(200),
+            division_id character varying(200) NOT NULL,
             email character varying(200) COLLATE pg_catalog."default" NOT NULL,
             password character varying(200) COLLATE pg_catalog."default" NOT NULL,
             phone_number bigint NOT NULL,
@@ -55,7 +55,7 @@ const createTablesIfNotExists = (db, p_env) => {
 
         db.query(`CREATE TABLE IF NOT EXISTS public.institution_payment_details(
             sl_no SERIAL PRIMARY KEY,
-            institution_id character varying(200) COLLATE pg_catalog."default",
+            institution_id character varying(200) NOT NULL COLLATE pg_catalog."default",
             payment_year character varying(200) NOT NULL,
             receipt_no_or_date character varying(200) COLLATE pg_catalog."default" NOT NULL,
             property_tax integer NOT NULL,
@@ -96,7 +96,7 @@ const createTablesIfNotExists = (db, p_env) => {
             ON UPDATE CASCADE
             ON DELETE CASCADE)`
         );
-        db.query(`INSERT INTO admins (email, password) VALUES ($1, $2) ON CONFLICT DO NOTHING`,[p_env.ADMIN_EMAIL, p_env.ADMIN_PASSWORD]);
+        db.query(`INSERT INTO admins (admin_id,email, password) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,[1,p_env.ADMIN_EMAIL, p_env.ADMIN_PASSWORD]);
         db.query(`INSERT INTO public.division_users(admin_id, division_id, division, email, password, phone_number) VALUES(1, 'ADMIN_TEMP_DIVISION', 'Admin Division', $1, $2, 0000000000) ON CONFLICT DO NOTHING`,[p_env.ADMIN_DIV_EMAIL, p_env.ADMIN_DIV_PASSWORD]);
         db.query(`INSERT INTO public.institution_users(division_id, email, password, phone_number, institution_id, country, state, district, taluk, institution_name, village_or_city, khatha_or_property_no, name_of_khathadar) VALUES('ADMIN_TEMP_DIVISION', $1, $2, 1111111111, 'ADMIN_TEMP_INSTITUTION', 'India', 'Karnataka', 'Mysuru', 'Mysuru', 'ADMIN_TEMP_INSTITUTION', 'Mysuru', '123456789', 'ADMIN_TEMP_INSTITUTION') ON CONFLICT DO NOTHING`,[p_env.ADMIN_INST_EMAIL, p_env.ADMIN_INST_PASSWORD]);
 
