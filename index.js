@@ -789,7 +789,6 @@ app.get("/modify_institution_payment_details", allowInstitutionUsers, async(req,
 });
 
 app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.single('image'), async(req,res)=>{
-    const institution_id = req.body[`institution-id`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
     const property_tax = req.body[`property-tax`];
