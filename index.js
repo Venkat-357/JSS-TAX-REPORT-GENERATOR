@@ -17,6 +17,8 @@ import { allowAdmins, allowLoggedIn, allowDivisionUsers, allowInstitutionUsers }
 import { validateEmail, validatePassword } from './utils/Validation.js';
 import { addFlashMessages } from './utils/add_flash_messages.js';
 
+console.log("Process environment",process.env);
+
 // Basic Express app setup
 const app = express();
 const port = process.env.APP_PORT || 3000;
