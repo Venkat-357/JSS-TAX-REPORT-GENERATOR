@@ -789,7 +789,7 @@ app.get("/modify_institution_payment_details", allowInstitutionUsers, async(req,
 });
 
 app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.single('image'), async(req,res)=>{
-    const sl_no = req.body[`sl-no`];
+    const sl_no = req.body[`sl_no`];
     const institution_id = req.body[`institution-id`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
@@ -813,7 +813,7 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
     const second_floor = req.body[`second-floor-in-sqft`];
     const third_floor = req.body[`third-floor-in-sqft`];
     try {
-        await db.query(
+        const updateResult = await db.query(
             `UPDATE institution_payment_details 
             SET 
             payment_year = $1,
@@ -837,7 +837,7 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
             first_floor_sqft = $19,
             second_floor_sqft = $20,
             third_floor_sqft = $21
-            WHERE sl_no = $22`,
+            WHERE sl_no = $22 RETURNING *`,
             [
             payment_year, receipt_no, property_tax, rebate, service_tax,
             dimension_of_vacant_area, dimension_of_building_area, total_dimension,
@@ -846,6 +846,11 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
             first_floor, second_floor, third_floor, sl_no
             ]
         );
+        if (updateResult.rowCount === 0) {
+            console.log("No records updated. Check if sl_no is correct.");
+        } else {
+            console.log("Update successful");
+        }
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
