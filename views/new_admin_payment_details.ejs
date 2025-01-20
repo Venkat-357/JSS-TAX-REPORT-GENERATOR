@@ -1,0 +1,176 @@
+<%- include(`partials/header`); -%>
+<form action="/new_admin_payment_details" method="post" enctype="multipart/form-data" class="form-container">
+    <h2 class="pt-3 pb-3">Add New Institution Payment Details by Admin</h2>
+    <p class="text-center">This form is used to add payment details for divisions' institutions that haven't been created yet.</p>
+    <p class="text-center">You can later transfer these payment records and details to institutions once they are created.</p>
+    <div class="form-group">
+    <label for="institution-id">INSTITUTION ID :</label>
+    <input type="text" id="institution-id" name="institution-id"
+    <% if(institution_id) { %>
+        value="<%= institution_id %>"
+        readonly
+        class="gray-out"
+    <% } %>
+    >
+    </div> 
+
+    <div class="form-group">
+        <label for="dimension-of-vacant-area-in-sqft">DIMENSION OF VACANT AREA IN SQFT :</label>
+        <input type="number" id="dimension-of-vacant-area-in-sqft" name="dimension-of-vacant-area-in-sqft" oninput="calculateSum()" min="0" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="dimension-of-building-area-in-sqft">DIMENSION OF BUILDING AREA IN SQFT :</label>
+        <input type="number" id="dimension-of-building-area-in-sqft" name="dimension-of-building-area-in-sqft" oninput="calculateSum()" min="0" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="total-dimension">TOTAL DIMENSION IN SQFT (Automatically calculated=Vacant area + building area):</label>
+        <input type="number" id="total-dimension" name="total-dimension" class="gray-out" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="number_of_floors">NO OF FLOORS :</label>
+        <select type="number" id="number_of_floors" name="number_of_floors" required>
+            <option value="" selected disabled>Select a number</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="basement-floor-in-sqft">BASEMENT FLOOR IN SQFT :</label>
+        <input type="number" id="basement-floor-in-sqft" name="basement-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="ground-floor-in-sqft">GROUND FLOOR IN SQFT :</label>
+        <input type="number" id="ground-floor-in-sqft" name="ground-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="first-floor-in-sqft">FIRST FLOOR IN SQFT :</label>
+        <input type="number" id="first-floor-in-sqft" name="first-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="second-floor-in-sqft">SECOND FLOOR IN SQFT :</label>
+        <input type="number" id="second-floor-in-sqft" name="second-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="third-floor-in-sqft">THIRD FLOOR IN SQFT :</label>
+        <input type="number" id="third-floor-in-sqft" name="third-floor-in-sqft" value="0" required>
+    </div>
+
+    <div class="form-group">
+        <label for="usage-of-building">USAGE OF BUILDING :</label>
+        <input type="text" id="usage-of-building" name="usage-of-building" required>
+    </div>
+
+    <div class="form-group">
+    <label for="property-tax">PROPERTY TAX :</label>
+    <input type="number" id="property-tax" name="property-tax" oninput="calculateTotalAmount()" min="0" required>
+    </div>
+
+    <div class="form-group">
+    <label for="rebate">REBATE (NOT INCLUDED IN TOTAL AMOUNT):</label>
+    <input type="number" id="rebate" name="rebate" required>
+    </div>
+
+    <div class="form-group">
+    <label for="service-tax">SERVICE TAX :</label>
+    <input type="number" id="service-tax" name="service-tax" oninput="calculateTotalAmount()" min="0" required>
+    </div>
+
+    <div class="form-group">
+    <label for="cesses">CESSES :</label>
+    <input type="number" id="cesses" name="cesses" oninput="calculateTotalAmount()" min="0" required>
+    </div>
+
+    <div class="form-group">
+    <label for="interest">INTEREST :</label>
+    <input type="number" id="interest" name="interest" oninput="calculateTotalAmount()" min="0" required>
+    </div>
+
+    <div class="form-group">
+    <label for="total-amount">PENALTY/ARREARS :</label>
+    <input type="number" id="penalty-arrears" name="penalty-arrears" oninput="calculateTotalAmount()" min="0" value="0" required>
+    </div>
+
+    <div class="form-group">
+    <label for="total-amount">TOTAL AMOUNT (Automatically calculated) :</label>
+    <input type="number" id="total-amount" name="total-amount" class="gray-out" readonly>
+    </div>
+
+    <div class="form-group">
+        <label for="department-paid">TO WHICH DEPARTMENT PAID :</label>
+        <select name="department-paid" id="department-paid">
+            <option value="" selected disabled>Select a Department</option>
+            <option value="BBMP">BBMP</option>
+            <option value="MCC">MCC</option>
+            <option value="KHB">KHB</option>
+            <option value="KIADB">KIADB</option>
+            <option value="Nagara-Sabha">Nagara Sabha</option>
+            <option value="Grama-Panchayat">Grama Panchayat</option>
+            <option value="Pattana-Panchayat">Pattana Panchayat</option>
+            <option value="Purasabha">Purasabha</option>
+            <option value="MUDA">MUDA</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="payment-year">Year :</label>
+        <select id="payment-year" name="payment-year" required>
+            <option value="" selected disabled>Select a Payment Year</option>
+        </select>
+        <small>Format: YYYY-YY (e.g., 2023-24)</small>
+    </div>
+
+    <div class="form-group">
+    <label for="receipt-no">RECEIPT NUMBER OR DATE :</label>
+    <input type="text" id="receipt-no" name="receipt-no" required>
+    </div>
+
+    <div class="form-group">
+    <label for="remarks">REMARKS :</label>
+    <input type="text" id="remarks" name="remarks" required>
+    </div>    
+
+    <div class="form-group">
+    <label for="image">Bill Image (Max size: 5MB, .jpg/.jpeg/.png/.gif/.pdf):</label>
+    <input id="image" type="file" name="image" accept="image/jpeg, image/png, image/gif, application/pdf" required>
+    </div>
+    
+    <div class="submit-button">
+        <button type="submit">Submit</button>
+    </div>
+</form>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Populate the dropdown with years in the format "YYYY-YY" from 2010-11 to the current year
+        const selectedYearElement = document.getElementById('payment-year');
+        const currentYear = new Date().getFullYear();
+
+        // Replace this with the actual server-side variable if using a template engine
+        const selectedYear = "<%= typeof selected_year !== 'undefined' ? selected_year : '' %>";
+
+        for (let i = currentYear; i >= 2010; i--) {
+            const nextYear = (i + 1).toString().slice(-2); // Get the last two digits of the next year
+            const yearRange = `${i}-${nextYear}`;
+            const option = document.createElement('option');
+            option.value = yearRange;
+            option.textContent = yearRange;
+
+            if (selectedYear === yearRange) {
+                option.selected = true;
+            }
+
+            selectedYearElement.appendChild(option);
+        }
+    });
+</script>
+<%- include(`partials/footer`); -%>

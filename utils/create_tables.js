@@ -1,4 +1,4 @@
-const createTablesIfNotExists = (db) => {
+const createTablesIfNotExists = (db, p_env) => {
     if(!db){
         console.log("database is not connected.Aborting");
         return;
@@ -96,6 +96,9 @@ const createTablesIfNotExists = (db) => {
             ON UPDATE CASCADE
             ON DELETE CASCADE)`
         );
+        db.query(`INSERT INTO admins (email, password) VALUES ($1, $2) ON CONFLICT DO NOTHING`,[p_env.ADMIN_EMAIL, p_env.ADMIN_PASSWORD]);
+        db.query(`INSERT INTO public.division_users(admin_id, division_id, division, email, password, phone_number) VALUES(1, 'ADMIN_TEMP_DIVISION', 'Admin Division', $1, $2, 0000000000) ON CONFLICT DO NOTHING`,[p_env.ADMIN_DIV_EMAIL, p_env.ADMIN_DIV_PASSWORD]);
+        db.query(`INSERT INTO public.institution_users(division_id, email, password, phone_number, institution_id, country, state, district, taluk, institution_name, village_or_city, khatha_or_property_no, name_of_khathadar) VALUES('ADMIN_TEMP_DIVISION', $1, $2, 1111111111, 'ADMIN_TEMP_INSTITUTION', 'India', 'Karnataka', 'Mysuru', 'Mysuru', 'ADMIN_TEMP_INSTITUTION', 'Mysuru', '123456789', 'ADMIN_TEMP_INSTITUTION') ON CONFLICT DO NOTHING`,[p_env.ADMIN_INST_EMAIL, p_env.ADMIN_INST_PASSWORD]);
 
     console.log("Tables created successfully");
     }

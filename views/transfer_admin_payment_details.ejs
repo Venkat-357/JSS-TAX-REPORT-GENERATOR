@@ -1,0 +1,82 @@
+<%- include(`partials/header`); -%>
+<form action="/transfer_admin_payment_details" method="post" class="form-container">
+    <h2 class="pt-3 pb-3">Transfer Temporary Payment Record to an Institution</h2>
+    <h3>The Record to transfer</h3>
+    <div class="overflow-scroll">
+    <table>
+        <tr>
+            <th>DIMENSION OF VACANT AREA IN SQFT</th>
+            <th>DIMENSION OF BUILDING AREA IN SQFT</th>
+            <th>TOTAL DIMENSION IN SQFT</th>
+            <th>NO OF FLOORS</th>
+            <th>BASEMENT FLOOR IN SQFT</th>
+            <th>GROUND FLOOR IN SQFT</th>
+            <th>FIRST FLOOR IN SQFT</th>
+            <th>SECOND FLOOR IN SQFT</th>
+            <th>THIRD FLOOR IN SQFT</th>
+            <th>USAGE OF BUILDING</th>
+            <th>PROPERTY TAX</th>
+            <th>REBATE</th>
+            <th>SERVICE TAX</th>
+            <th>CESSES</th>
+            <th>INTEREST</th>
+            <th>PENALTY/ARREARS</th>
+            <th>TOTAL AMOUNT</th>
+            <th>TO WHICH DEPARTMENT PAID</th>
+            <th>YEAR</th>
+            <th>RECEIPT NO / DATE</th>
+            <th>REMARKS</th>
+            <th>BILL</th>
+        </tr>
+        <tr>
+            <td><%=record.dimension_of_vacant_area_sqft%></td>
+            <td><%=record.dimension_of_building_area_sqft%></td>
+            <td><%=record.total_dimension_in_sqft%></td>
+            <td><%=record.number_of_floors%></td>
+            <td><%=record.basement_floor_sqft%></td>
+            <td><%=record.ground_floor_sqft%></td>
+            <td><%=record.first_floor_sqft%></td>
+            <td><%=record.second_floor_sqft%></td>
+            <td><%=record.third_floor_sqft%></td>
+            <td><%=record.usage_of_building%></td>
+            <td><%=record.property_tax%></td>
+            <td><%=record.rebate%></td>
+            <td><%=record.service_tax%></td>
+            <td><%=record.cesses%></td>
+            <td><%=record.interest%></td>
+            <td><%=record.penalty_arrears%></td>
+            <td><%=record.total_amount%></td>
+            <td><%=record.to_which_department_paid%></td>
+            <td><%=record.payment_year%></td>
+            <td><%=record.receipt_no_or_date%></td>
+            <td><%=record.remarks%></td>
+            <% if (record.bill_sl_no) { %>
+                <td>
+                    <a class="btn btn-info" href="/view_image/<%=record.bill_sl_no%>">View Bill</a>
+                </td>
+            <% } else { %>
+                <td>
+                    <a class="btn btn-warning" disabled>No Bill Uploaded</a>
+                </td>
+            <% } %>
+        </tr>
+
+    </table>
+    </div>
+    <div>
+        <input type="hidden" name="sl_no" value="<%= record.sl_no %>">
+    </div>
+    <div class="form-group">
+        <label for="institution_to_transfer_to">Choose an institution to transfer it to :</label>
+        <select id="institution_to_transfer_to" name="institution_to_transfer_to" required>
+            <option value="" selected disabled>Select an institution</option>
+            <% institutions.forEach(institution => { %>
+                <option value="<%= institution.institution_id %>"><%= institution.institution_name %></option>
+            <% }) %>
+        </select>
+    </div>
+    <div class="submit-button">
+        <button type="submit">Submit</button>
+    </div>
+</form>
+<%- include(`partials/footer`); -%>
