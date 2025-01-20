@@ -29,3 +29,10 @@ export function allowAdminsAndDivisionUsers(req, res, next) {
     }
     res.redirect('/login');
 }
+
+export function allowAdminsAndInstitutionUsers(req, res, next) {
+    if (req.session.isLoggedIn && (req.session.isAdmin || req.session.isInstitutionUser)) {
+        return next();
+    }
+    res.redirect('/login');
+}

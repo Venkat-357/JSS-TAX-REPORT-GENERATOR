@@ -1,4 +1,4 @@
-import express, { query } from 'express';
+import express from 'express';
 import pg from 'pg';
 import bodyParser from 'body-parser';
 import session from 'express-session';
@@ -13,7 +13,7 @@ import { exit } from 'process';
 import createTablesIfNotExists from './utils/create_tables.js';
 import {setAuthStatus } from './middleware/auth_wrap.js';
 import { setFlashMessages } from './middleware/set_flash_messages.js';
-import { allowAdmins, allowAdminsAndDivisionUsers, allowLoggedIn, allowDivisionUsers, allowInstitutionUsers } from './middleware/restrict_routes.js';
+import { allowAdmins, allowLoggedIn, allowDivisionUsers, allowInstitutionUsers } from './middleware/restrict_routes.js';
 import { validateEmail, validatePassword } from './utils/Validation.js';
 import { addFlashMessages } from './utils/add_flash_messages.js';
 
@@ -64,7 +64,7 @@ try {
     db.connect();
     console.log("Connected to the database");
     // Create the tables if they do not exist
-    createTablesIfNotExists(db);
+    createTablesIfNotExists(db,process.env);
 } catch (err) {
     console.log("Failed to connect to the database");
     console.log(err);
@@ -88,6 +88,7 @@ app.get("/login", (req,res)=>{
     }
 });
 import { login, logout } from './controllers/auth.js';
+import { CLIENT_RENEG_WINDOW } from 'tls';
 app.post("/login", async (req,res)=> login(req,res,db));
 
 app.get("/logout", async(req,res)=> logout(req,res));
@@ -706,8 +707,6 @@ app.post("/new_institution_payment_details",allowInstitutionUsers,upload.single(
     const first_floor = req.body[`first-floor-in-sqft`];
     const second_floor = req.body[`second-floor-in-sqft`];
     const third_floor = req.body[`third-floor-in-sqft`];
-
-    console.log(no_of_floors)
     // Pre checks:
     try {
         // Make sure that the year isn't already present
@@ -775,6 +774,14 @@ app.get("/modify_institution_payment_details", allowInstitutionUsers, async(req,
         res.redirect("/list_payment_details_in_institution");
         return;
     }
+    // Make sure the institution user is the owner of the payment details
+    const institutionCheck = await db.query("SELECT * FROM institution_payment_details WHERE sl_no = $1 AND institution_id = $2", [sl_no, req.session.user_details.institution_id]);
+    if (institutionCheck.rowCount === 0) {
+        console.log("Not authorized");
+        req.flash("danger","Not authorized");
+        res.redirect("/list_payment_details_in_institution");
+        return;
+    }
     res.render("modify_institution_payment_details.ejs",{
         retrieved_info : retrieved_info,
     });
@@ -805,13 +812,48 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
     const second_floor = req.body[`second-floor-in-sqft`];
     const third_floor = req.body[`third-floor-in-sqft`];
     try {
-        let sl_no = await db.query("UPDATE institution_payment_details SET institution_id=$1,payment_year=$2,receipt_no_or_date=$3,property_tax=$4,rebate=$5,service_tax=$6,dimension_of_vacant_area_sqft=$7,dimension_of_building_area_sqft=$8,total_dimension_in_sqft=$9,usage_of_building=$10,to_which_department_paid=$11,cesses=$12,interest=$13,penalty_arrears=$14,total_amount=$15,remarks=$16,number_of_floors=$17,basement_floor_sqft=$18,ground_floor_sqft=$19,first_floor_sqft=$20,second_floor_sqft=$21,third_floor_sqft=$22 WHERE institution_id=$23 RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,penalty_arrears,total_amount,remarks,no_of_floors,basement_floor,ground_floor,first_floor,second_floor,third_floor,institution_id]);
+        // Get the sl_no of the record
+        const sl_no = await db.query("SELECT sl_no FROM institution_payment_details WHERE institution_id = $1 AND receipt_no_or_date = $2", [institution_id,receipt_no]);
+        console.log(sl_no.rows[0].sl_no);
+        await db.query(
+            `UPDATE institution_payment_details 
+            SET 
+            payment_year = $1,
+            receipt_no_or_date = $2,
+            property_tax = $3,
+            rebate = $4,
+            service_tax = $5,
+            dimension_of_vacant_area_sqft = $6,
+            dimension_of_building_area_sqft = $7,
+            total_dimension_in_sqft = $8,
+            usage_of_building = $9,
+            to_which_department_paid = $10,
+            cesses = $11,
+            interest = $12,
+            penalty_arrears = $13,
+            total_amount = $14,
+            remarks = $15,
+            number_of_floors = $16,
+            basement_floor_sqft = $17,
+            ground_floor_sqft = $18,
+            first_floor_sqft = $19,
+            second_floor_sqft = $20,
+            third_floor_sqft = $21
+            WHERE sl_no = $22`,
+            [
+            payment_year, receipt_no, property_tax, rebate, service_tax,
+            dimension_of_vacant_area, dimension_of_building_area, total_dimension,
+            usage_of_building, department_paid, cesses, interest, penalty_arrears,
+            total_amount, remarks, no_of_floors, basement_floor, ground_floor,
+            first_floor, second_floor, third_floor, sl_no.rows[0].sl_no
+            ]
+        );
         if(req.file) {
             const fileBuffer = req.file.buffer;
             const fileType = req.file.mimetype;
             const fileName = req.file.originalname;
             //insert the image into database
-            await db.query("UPDATE institution_bills SET sl_no=$1,data=$2,fileType=$3,fileName=$4",[sl_no.rows[0].sl_no,fileBuffer,fileType,fileName]);
+            await db.query("UPDATE institution_bills SET data=$2,fileType=$3,fileName=$4 WHERE sl_no=$1",[sl_no.rows[0].sl_no,fileBuffer,fileType,fileName]);
             }
             console.log("modified institution payment details are added successfully");
             req.flash("success","Institution payment details modified successfully");
@@ -925,6 +967,141 @@ app.get("/local_report_admin",allowAdmins,async(req,res)=>{
     }
     return;
 });
+
+// Allowing admins to temporarily add payment details under a secret 'admin' division and institution to later transfer them to institutions when they are added
+app.get('/new_admin_payment_details',allowAdmins,(req,res)=>{
+    res.render("new_admin_payment_details.ejs",{
+        institution_id: "ADMIN_TEMP_INSTITUTION",
+    });
+    return;
+});
+
+app.post("/new_admin_payment_details",allowAdmins,upload.single('image'),async(req,res)=>{
+    const institution_id = req.body[`institution-id`];
+    const payment_year = req.body[`payment-year`];
+    const receipt_no = req.body['receipt-no'];
+    const property_tax = req.body[`property-tax`];
+    const rebate = req.body.rebate;
+    const service_tax = req.body[`service-tax`];
+    const dimension_of_vacant_area = req.body[`dimension-of-vacant-area-in-sqft`];
+    const dimension_of_building_area = req.body[`dimension-of-building-area-in-sqft`];
+    const total_dimension = req.body[`total-dimension`];
+    const usage_of_building = req.body[`usage-of-building`];
+    const department_paid = req.body[`department-paid`];
+    const cesses = req.body.cesses;
+    const interest = req.body.interest;
+    const penalty_arrears = req.body[`penalty-arrears`];
+    const total_amount = req.body[`total-amount`];
+    const remarks = req.body.remarks;
+    const no_of_floors = req.body[`number_of_floors`];
+    const basement_floor = req.body[`basement-floor-in-sqft`];
+    const ground_floor = req.body[`ground-floor-in-sqft`];
+    const first_floor = req.body[`first-floor-in-sqft`];
+    const second_floor = req.body[`second-floor-in-sqft`];
+    const third_floor = req.body[`third-floor-in-sqft`];
+    // Pre checks:
+    try {
+        // Make sure the receipt number isn't already present
+        const receiptCheck = await db.query("SELECT * FROM institution_payment_details WHERE receipt_no_or_date = $1 AND institution_id = $2", [receipt_no, institution_id]);
+        if (receiptCheck.rowCount !== 0) {
+            console.log("Receipt number already exists");
+            req.flash("danger","Receipt number already exists");
+            res.redirect("/new_admin_payment_details");
+            return;
+        }
+    } catch (error) {
+        console.error("Error checking for existing year or receipt number:", error);
+        req.flash("danger","An error occurred while doing preliminary checks and the payment details could not be added. Please contact the administrator.");
+        res.redirect("/new_admin_payment_details");
+        return;
+    }
+
+    // Insert the payment details
+    try {
+            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,penalty_arrears,total_amount,remarks,number_of_floors,basement_floor_sqft,ground_floor_sqft,first_floor_sqft,second_floor_sqft,third_floor_sqft) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,penalty_arrears,total_amount,remarks,no_of_floors,basement_floor,ground_floor,first_floor,second_floor,third_floor]);
+            if(req.file) {
+                const fileBuffer = req.file.buffer;
+                const fileType = req.file.mimetype;
+                const fileName = req.file.originalname;
+                //insert the image into database
+                await db.query(`INSERT INTO institution_bills (sl_no,fileName,filetype,data) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3)`,[fileName,fileType,fileBuffer]);
+            }
+            console.log("new institution payment details are added successfully");
+            req.flash("success","New institution payment details added successfully");
+            res.redirect("/list_all_payment_details");
+            return;
+        } catch (error) {
+            console.log("failed to add the new institution payment details");
+            console.log(error);
+            req.flash("danger","Failed to add new institution payment details. An error occurred.");
+            res.redirect("/new_admin_payment_details");
+            return;
+        }
+});
+
+app.get('/transfer_admin_payment_details',allowAdmins,async(req,res)=>{
+    const sl_no = req.query.sl_no;
+    if (!sl_no) {
+        req.flash("danger","Invalid request");
+        res.redirect("/list_all_payment_details");
+        return;
+    }
+    try {
+        // Check if the record exists and get that record
+        const recordCheck = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.sl_no = $1",[sl_no]);
+        if (recordCheck.rowCount === 0) {
+            req.flash("danger","Payment details not found");
+            res.redirect("/list_all_payment_details");
+            return;
+        }
+
+        // Get a list of all institution users
+        const institution_users = await db.query("SELECT * FROM institution_users");
+        // Send to transfer options page
+        res.render("transfer_admin_payment_details.ejs",{
+            sl_no: sl_no,
+            record : recordCheck.rows[0],
+            institutions : institution_users.rows,
+        });
+        return;
+    } catch (error) {
+        console.error("Error transferring payment details:", error);
+        req.flash("danger","An error occurred while transferring payment details");
+        res.redirect("/list_all_payment_details");
+        return;
+    }
+});
+
+app.post('/transfer_admin_payment_details',allowAdmins,async(req,res)=>{
+    const institution_to_transfer_to = req.body.institution_to_transfer_to;
+    const sl_no = req.body.sl_no;
+    if (!institution_to_transfer_to || !sl_no) {
+        req.flash("danger","Invalid request");
+        res.redirect("/list_all_payment_details");
+        return;
+    }
+    try {
+        // Make sure sl_no entry exists and it belongs to the admin institution
+        const adminCheck = await db.query("SELECT * FROM institution_payment_details WHERE sl_no = $1 AND institution_id = 'ADMIN_TEMP_INSTITUTION'",[sl_no]);
+        if (adminCheck.rowCount === 0) {
+            req.flash("danger","Payment details not found");
+            res.redirect("/list_all_payment_details");
+            return;
+        }
+        // Transfer the payment details
+        await db.query("UPDATE institution_payment_details SET institution_id = $1 WHERE sl_no = $2",[institution_to_transfer_to,sl_no]);
+        console.log(`Payment details with sl_no ${sl_no} transferred to institution ${institution_to_transfer_to}`);
+        req.flash("success","Payment details transferred successfully");
+        res.redirect("/list_all_payment_details");
+        return;
+    } catch (error) {
+        console.error("Error transferring payment details:", error);
+        req.flash("danger","An error occurred while transferring payment details.");
+        res.redirect("/list_all_payment_details");
+        return;
+    }
+});
+
 
 //handling the get route to generate the comprehensive report by divison user
 

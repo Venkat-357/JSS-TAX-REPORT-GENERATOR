@@ -45,7 +45,7 @@
         <th>RECEIPT NO / DATE</th>
         <th>REMARKS</th>
         <th>APPROVED BY DIVISION USER?</th>
-        <th style="text-align: center;">OPTIONS</th>
+        <th style="text-align: center;" colspan="2">OPTIONS</th>
     </tr>
     <% institution_payment_details_in_division.forEach((entry)=>{ %>
         <tr>
@@ -86,12 +86,18 @@
                     <a class="btn btn-warning" disabled>No Bill Uploaded</a>
                 </td>
             <% } %>
+            <% if (entry.institution_id === 'ADMIN_TEMP_INSTITUTION') { %>
+                <td>
+                    <a class="btn btn-info" href="/transfer_admin_payment_details?sl_no=<%=entry.sl_no%>">Transfer to another institution</a>
+                </td>
+            <% } %>
         </tr>
 
     <% }) %>
 
 </table>
 </div>
+<a class="btn btn-primary" href="/new_admin_payment_details">Add new payment details(Temporary, to assign later to a division)</a>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Populate the dropdown with years in the format "YYYY-YY" from 2010-11 to the current year

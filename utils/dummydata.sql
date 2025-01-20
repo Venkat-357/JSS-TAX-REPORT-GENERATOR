@@ -8,7 +8,7 @@
 
 
 
-INSERT INTO admins (email, password) VALUES ('admin.jssmvp@jssonline.com', 'jssmvp123');
+-- INSERT INTO admins (email, password) VALUES ('admin.jssmvp@jssonline.com', 'jssmvp123');
 
 INSERT INTO division_users (admin_id,division_id,division,email,password,phone_number) 
 VALUES(1,'CED','College Education Division','ced@jssonline.org','Ced123',9999887654);
