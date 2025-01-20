@@ -2,6 +2,10 @@
 <form action="/modify_institution_payment_details" method="post" enctype="multipart/form-data" class="form-container">
     <h2 class="pt-3 pb-3">Modify Institution Payment Details</h2>
     <div class="form-group">
+        <label for="sl_no" hidden>SL_NO :</label>
+        <input type="text" id="sl_no" name="sl_no" value="<%=retrieved_info.sl_no%>" required hidden>
+    </div>
+    <div class="form-group">
     <label for="institution-id">INSTITUTION ID :</label>
     <input type="text" id="institution-id" name="institution-id"
     <% if(retrieved_info.institution_id) { %>

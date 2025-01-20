@@ -17,8 +17,6 @@ import { allowAdmins, allowLoggedIn, allowDivisionUsers, allowInstitutionUsers }
 import { validateEmail, validatePassword } from './utils/Validation.js';
 import { addFlashMessages } from './utils/add_flash_messages.js';
 
-console.log("Process environment",process.env);
-
 // Basic Express app setup
 const app = express();
 const port = process.env.APP_PORT || 3000;
@@ -791,6 +789,7 @@ app.get("/modify_institution_payment_details", allowInstitutionUsers, async(req,
 });
 
 app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.single('image'), async(req,res)=>{
+    const sl_no = req.body[`sl-no`];
     const institution_id = req.body[`institution-id`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
@@ -814,9 +813,6 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
     const second_floor = req.body[`second-floor-in-sqft`];
     const third_floor = req.body[`third-floor-in-sqft`];
     try {
-        // Get the sl_no of the record
-        const sl_no = await db.query("SELECT sl_no FROM institution_payment_details WHERE institution_id = $1 AND receipt_no_or_date = $2", [institution_id,receipt_no]);
-        console.log(sl_no.rows[0].sl_no);
         await db.query(
             `UPDATE institution_payment_details 
             SET 
@@ -847,7 +843,7 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
             dimension_of_vacant_area, dimension_of_building_area, total_dimension,
             usage_of_building, department_paid, cesses, interest, penalty_arrears,
             total_amount, remarks, no_of_floors, basement_floor, ground_floor,
-            first_floor, second_floor, third_floor, sl_no.rows[0].sl_no
+            first_floor, second_floor, third_floor, sl_no
             ]
         );
         if(req.file) {
@@ -855,7 +851,7 @@ app.post("/modify_institution_payment_details", allowInstitutionUsers, upload.si
             const fileType = req.file.mimetype;
             const fileName = req.file.originalname;
             //insert the image into database
-            await db.query("UPDATE institution_bills SET data=$2,fileType=$3,fileName=$4 WHERE sl_no=$1",[sl_no.rows[0].sl_no,fileBuffer,fileType,fileName]);
+            await db.query("UPDATE institution_bills SET data=$2,fileType=$3,fileName=$4 WHERE sl_no=$1",[sl_no,fileBuffer,fileType,fileName]);
             }
             console.log("modified institution payment details are added successfully");
             req.flash("success","Institution payment details modified successfully");
