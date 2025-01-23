@@ -1,5 +1,17 @@
+import db from '../db.js';
+
+export const getLogin = (req,res)=>{
+    if (req.session.isLoggedIn) {
+        res.redirect("/home");
+        return;
+    } else {
+        res.render("login.ejs");
+        return;
+    }
+};
+
 // TODO: Use bcrypt for password hashing
-export const login = async(req,res,db) => {
+export const postLogin = async(req,res) => {
     console.log("Login request received");
     const email = req.body.email;
     const password = req.body.password;
@@ -77,7 +89,7 @@ export const login = async(req,res,db) => {
     return;
 }
 
-export const logout = async(req,res) => {
+export const getLogout = async(req,res) => {
     if (!req.session.isLoggedIn) {
         res.redirect("/login");
         return;

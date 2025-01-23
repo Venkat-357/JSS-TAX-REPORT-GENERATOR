@@ -1,4 +1,10 @@
-const createTablesIfNotExists = (db, p_env) => {
+import db from '../db.js';
+const createTablesIfNotExists = (p_env) => {
+    if (!p_env) {
+        console.log("Environment variables not found.Aborting");
+        return;
+    }
+
     if(!db){
         console.log("database is not connected.Aborting");
         return;

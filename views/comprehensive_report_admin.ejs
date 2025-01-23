@@ -29,32 +29,34 @@
         <th>REMARKS</th>
     </tr>
     <% institution_payment_details_in_division.forEach((entry)=>{ %>
-        <tr>
-            <td><%=entry.institution_name%></5></td>
-            <td><%=entry.institution_id%></td>
-            <td><%=entry.khatha_or_property_no%></td>
-            <td><%=entry.pid%></td>
-            <td><%=entry.payment_year%></td>
-            <td><%=entry.dimension_of_vacant_area_sqft%></td>
-            <td><%=entry.dimension_of_building_area_sqft%></td>
-            <td><%=entry.total_dimension_in_sqft%></td>
-            <td><%=entry.number_of_floors%></td>
-            <td><%=entry.basement_floor_sqft%></td>
-            <td><%=entry.ground_floor_sqft%></td>
-            <td><%=entry.first_floor_sqft%></td>
-            <td><%=entry.second_floor_sqft%></td>
-            <td><%=entry.third_floor_sqft%></td>
-            <td><%=entry.usage_of_building%></td>
-            <td><%=entry.property_tax%></td>
-            <td><%=entry.rebate%></td>
-            <td><%=entry.service_tax%></td>
-            <td><%=entry.cesses%></td>
-            <td><%=entry.interest%></td>
-            <td><%=entry.total_amount%></td>
-            <td><%=entry.to_which_department_paid%></td>
-            <td><%=entry.receipt_no_or_date%></td>
-            <td><%=entry.remarks%></td>
-        </tr>
+        <% if (entry.institution_id !== 'ADMIN_TEMP_INSTITUTION') { %>
+            <tr>
+                <td><%=entry.institution_name%></5></td>
+                <td><%=entry.institution_id%></td>
+                <td><%=entry.khatha_or_property_no%></td>
+                <td><%=entry.pid%></td>
+                <td><%=entry.payment_year%></td>
+                <td><%=entry.dimension_of_vacant_area_sqft%></td>
+                <td><%=entry.dimension_of_building_area_sqft%></td>
+                <td><%=entry.total_dimension_in_sqft%></td>
+                <td><%=entry.number_of_floors%></td>
+                <td><%=entry.basement_floor_sqft%></td>
+                <td><%=entry.ground_floor_sqft%></td>
+                <td><%=entry.first_floor_sqft%></td>
+                <td><%=entry.second_floor_sqft%></td>
+                <td><%=entry.third_floor_sqft%></td>
+                <td><%=entry.usage_of_building%></td>
+                <td><%=entry.property_tax%></td>
+                <td><%=entry.rebate%></td>
+                <td><%=entry.service_tax%></td>
+                <td><%=entry.cesses%></td>
+                <td><%=entry.interest%></td>
+                <td><%=entry.total_amount%></td>
+                <td><%=entry.to_which_department_paid%></td>
+                <td><%=entry.receipt_no_or_date%></td>
+                <td><%=entry.remarks%></td>
+            </tr>
+        <% } %>
     <% }) %>
 
 </table>

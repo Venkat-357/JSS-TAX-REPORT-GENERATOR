@@ -10,13 +10,15 @@
                 <th>PROPERTY ID</th>
             </tr>
             <% institution_payment_details.forEach((entry) => { %>
-                <tr>
-                    <td><%= entry.institution_id %></td>
-                    <td><%= entry.institution_name %></td>
-                    <td><%= entry.khatha_or_property_no %></td>
-                    <td><%= entry.name_of_khathadar %></td>
-                    <td><%= entry.pid %></td>
-                </tr>
+                <% if (entry.institution_id !== 'ADMIN_TEMP_INSTITUTION') { %>
+                    <tr>
+                        <td><%= entry.institution_id %></td>
+                        <td><%= entry.institution_name %></td>
+                        <td><%= entry.khatha_or_property_no %></td>
+                        <td><%= entry.name_of_khathadar %></td>
+                        <td><%= entry.pid %></td>
+                    </tr>
+                <% } %>
             <% }) %>
         </table>
     </div>
