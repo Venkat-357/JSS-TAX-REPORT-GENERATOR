@@ -66,6 +66,8 @@ The application uses PostgreSQL with the following main tables:
 - institution_users
 - institution_payment_details
 - institution_bills
+- admin_payment_details
+- admin_bills
 
 ## Getting Started
 
@@ -152,6 +154,10 @@ GET  /create_new_division           - Create division form
 POST /create_new_division           - Create new division
 GET  /comprehensive_report_admin    - View comprehensive report
 GET  /local_report_admin            - View local report
+GET  /new_admin_payment_details      - Add payment temporarily form
+POST /new_admin_payment_details     - Create temporary payment record
+GET  /transfer_admin_payment_details - Transfer temporary payment to institution page
+POST /transfer_admin_payment_details - Transfer payment to institution
 ```
 
 ### Division Routes
@@ -204,7 +210,7 @@ GET  /local_report_institution            - Institution local report
 - Role-based access control (admins, division users, institution users)
 - User creation and modification (admins can create division users, division users can create institution users)
 - Password management
-- Activity logging 
+- Activity logging
 
 ## Security Features
 
