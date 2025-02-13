@@ -84,19 +84,40 @@ app.get('/go_back', allowLoggedIn, (req,res)=>{
 // View images
 app.get("/view_image/:sl_no", allowLoggedIn, async(req,res)=>{
     const sl_no = req.params.sl_no;
+    const isAdminBill = req.query.type === 'admin'; // Check if the image is an admin bill image. If it is, then the user must be an admin to view it and we need to fetch the image from the admin images table.
+
     if (!sl_no || isNaN(sl_no)) {
         req.flash("danger","Invalid request");
         res.redirect("/home");
         return;
     }
-    // Find if the image is in institution_bills
+    
+    if (isAdminBill) {
+        const admin_query_result = await db.query("SELECT * FROM admin_bills WHERE sl_no = $1",[sl_no]);
+        // If the user is an admin and it is an admin property image, just send it.
+        if (req.session.isAdmin && admin_query_result.rows.length !== 0) {
+            const image = admin_query_result.rows[0];
+            res.setHeader('Content-Type', image.filetype);
+            res.send(image.data);
+            return;
+        } else {
+            req.flash("danger","No image found");
+            console.log("No image found");
+            res.redirect("/home");
+            return;
+        }
+    }
+
+    // Find if the image is in institution_bills or admin_bills
     const query_result = await db.query("SELECT * FROM institution_bills WHERE sl_no = $1",[sl_no]);
+
     if (query_result.rows.length === 0) {
         req.flash("danger","No image found");
         console.log("No image found");
         res.redirect("/home");
         return;
     }
+
     // Check if institution user is authorized to view the image
     if (!req.session.isAdmin && !req.session.isDivisionUser && req.session.isInstitutionUser && query_result.rows.length !== 0) {
         const check_owner = await db.query("SELECT institution_id FROM institution_payment_details WHERE sl_no = $1",[sl_no]);

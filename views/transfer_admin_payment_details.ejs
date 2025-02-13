@@ -5,6 +5,16 @@
     <div class="overflow-scroll">
     <table>
         <tr>
+            <th>PROPERTY NAME</th>
+            <th>COUNTRY</th>
+            <th>STATE</th>
+            <th>DISTRICT</th>
+            <th>TALUK</th>
+            <th>VILLAGE/CITY</th>
+            <th>PID</th>
+            <th>KHATHA/PROPERTY NO</th>
+            <th>NAME OF KHATHADAR</th>
+            <th>TYPE OF BUILDING</th>
             <th>DIMENSION OF VACANT AREA IN SQFT</th>
             <th>DIMENSION OF BUILDING AREA IN SQFT</th>
             <th>TOTAL DIMENSION IN SQFT</th>
@@ -29,6 +39,16 @@
             <th>BILL</th>
         </tr>
         <tr>
+            <td><%=record.property_name%></td>
+            <td><%=record.country%></td>
+            <td><%=record.state%></td>
+            <td><%=record.district%></td>
+            <td><%=record.taluk%></td>
+            <td><%=record.village_or_city%></td>
+            <td><%=record.pid || 'N/A'%></td>
+            <td><%=record.khatha_or_property_no%></td>
+            <td><%=record.name_of_khathadar%></td>
+            <td><%=record.type_of_building%></td>
             <td><%=record.dimension_of_vacant_area_sqft%></td>
             <td><%=record.dimension_of_building_area_sqft%></td>
             <td><%=record.total_dimension_in_sqft%></td>
@@ -71,9 +91,7 @@
         <select id="institution_to_transfer_to" name="institution_to_transfer_to" required>
             <option value="" selected disabled>Select an institution</option>
             <% institutions.forEach(institution => { %>
-                <% if (institution.institution_id !== 'ADMIN_TEMP_INSTITUTION') { %>
                 <option value="<%= institution.institution_id %>"><%= institution.institution_name %></option>
-                <% } %>
             <% }) %>
         </select>
     </div>

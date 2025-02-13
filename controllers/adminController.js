@@ -126,17 +126,23 @@ export const getAllPaymentDetailsPage = async(req,res)=>{
     //dispay the payment details if and only if the current year details are provided else display all the details
     if(!selected_year) {
         const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no");
-        const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+        const institution_payment_details = institution_payment_details_query_result.rows;
+        const admin_payment_details_query_result = await db.query("SELECT admin_payment_details.*, admin_bills.sl_no AS bill_sl_no FROM admin_payment_details LEFT JOIN admin_bills ON admin_payment_details.sl_no = admin_bills.sl_no");
+        const admin_payment_details = admin_payment_details_query_result.rows;
         res.render("list_all_payment_details.ejs",{
-            institution_payment_details_in_division : institution_payment_details_in_division,
+            institution_payment_details : institution_payment_details,
+            admin_payment_details : admin_payment_details,
             selected_year : selected_year,
         });
         return;
     } else {
         const institution_payment_details_query_result = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.payment_year = $1",[selected_year]);
-        const institution_payment_details_in_division = institution_payment_details_query_result.rows;
+        const institution_payment_details = institution_payment_details_query_result.rows;
+        const admin_payment_details_query_result = await db.query("SELECT admin_payment_details.*, admin_bills.sl_no AS bill_sl_no FROM admin_payment_details LEFT JOIN admin_bills ON admin_payment_details.sl_no = admin_bills.sl_no WHERE admin_payment_details.payment_year = $1",[selected_year]);
+        const admin_payment_details = admin_payment_details_query_result.rows;
         res.render("list_all_payment_details.ejs",{
-            institution_payment_details_in_division : institution_payment_details_in_division,
+            institution_payment_details : institution_payment_details,
+            admin_payment_details : admin_payment_details,
             selected_year : selected_year,
         });
         return;
@@ -220,14 +226,11 @@ export const postCreateNewDivision = async(req,res) => {
 
 // Allowing admins to temporarily add payment details under a secret 'admin' division and institution to later transfer them to institutions when they are added
 export const getNewAdminPaymentDetailsPage = (req,res)=>{
-    res.render("new_admin_payment_details.ejs",{
-        institution_id: "ADMIN_TEMP_INSTITUTION",
-    });
+    res.render("new_admin_payment_details.ejs");
     return;
 };
 
 export const postNewAdminPaymentDetails = async(req,res)=>{
-    const institution_id = req.body[`institution-id`];
     const payment_year = req.body[`payment-year`];
     const receipt_no = req.body['receipt-no'];
     const property_tax = req.body[`property-tax`];
@@ -249,10 +252,20 @@ export const postNewAdminPaymentDetails = async(req,res)=>{
     const first_floor = req.body[`first-floor-in-sqft`];
     const second_floor = req.body[`second-floor-in-sqft`];
     const third_floor = req.body[`third-floor-in-sqft`];
+    const property_name = req.body[`property-name`]
+    const country = req.body.country;
+    const state = req.body.state;
+    const district = req.body.district;
+    const taluk = req.body.taluk;
+    const village_or_city = req.body['village'];
+    const pid = req.body.pid;
+    const khatha_or_property_no = req.body['khatha-no'];
+    const name_of_khathadar = req.body['khathadar-name'];
+    const type_of_building = req.body['type-of-building'];
     // Pre checks:
     try {
         // Make sure the receipt number isn't already present
-        const receiptCheck = await db.query("SELECT * FROM institution_payment_details WHERE receipt_no_or_date = $1 AND institution_id = $2", [receipt_no, institution_id]);
+        const receiptCheck = await db.query("SELECT sl_no FROM institution_payment_details WHERE receipt_no_or_date = $1 UNION SELECT sl_no FROM admin_payment_details WHERE receipt_no_or_date = $1", [receipt_no]);
         if (receiptCheck.rowCount !== 0) {
             console.log("Receipt number already exists");
             req.flash("danger","Receipt number already exists");
@@ -268,16 +281,84 @@ export const postNewAdminPaymentDetails = async(req,res)=>{
 
     // Insert the payment details
     try {
-            let sl_no = await db.query("INSERT INTO institution_payment_details (institution_id,payment_year,receipt_no_or_date,property_tax,rebate,service_tax,dimension_of_vacant_area_sqft,dimension_of_building_area_sqft,total_dimension_in_sqft,usage_of_building,to_which_department_paid,cesses,interest,penalty_arrears,total_amount,remarks,number_of_floors,basement_floor_sqft,ground_floor_sqft,first_floor_sqft,second_floor_sqft,third_floor_sqft) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING sl_no",[institution_id,payment_year,receipt_no,property_tax,rebate,service_tax,dimension_of_vacant_area,dimension_of_building_area,total_dimension,usage_of_building,department_paid,cesses,interest,penalty_arrears,total_amount,remarks,no_of_floors,basement_floor,ground_floor,first_floor,second_floor,third_floor]);
+            let sl_no = await db.query(
+                `INSERT INTO admin_payment_details (
+                    payment_year, 
+                    receipt_no_or_date,
+                    property_tax,
+                    rebate,
+                    service_tax,
+                    dimension_of_vacant_area_sqft,
+                    dimension_of_building_area_sqft, 
+                    total_dimension_in_sqft,
+                    usage_of_building,
+                    to_which_department_paid,
+                    cesses,
+                    interest,
+                    penalty_arrears,
+                    total_amount,
+                    remarks,
+                    number_of_floors,
+                    basement_floor_sqft,
+                    ground_floor_sqft,
+                    first_floor_sqft,
+                    second_floor_sqft,
+                    third_floor_sqft,
+                    property_name,
+                    country,
+                    state,
+                    district,
+                    taluk,
+                    village_or_city,
+                    pid,
+                    khatha_or_property_no,
+                    name_of_khathadar,
+                    type_of_building
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31) 
+                RETURNING sl_no`,
+                [
+                    payment_year,
+                    receipt_no,
+                    property_tax,
+                    rebate, 
+                    service_tax,
+                    dimension_of_vacant_area,
+                    dimension_of_building_area,
+                    total_dimension,
+                    usage_of_building,
+                    department_paid,
+                    cesses,
+                    interest,
+                    penalty_arrears,
+                    total_amount,
+                    remarks,
+                    no_of_floors,
+                    basement_floor,
+                    ground_floor,
+                    first_floor,
+                    second_floor,
+                    third_floor,
+                    property_name,
+                    country,
+                    state,
+                    district,
+                    taluk,
+                    village_or_city,
+                    pid,
+                    khatha_or_property_no,
+                    name_of_khathadar,
+                    type_of_building
+                ]
+            );
             if(req.file) {
                 const fileBuffer = req.file.buffer;
                 const fileType = req.file.mimetype;
                 const fileName = req.file.originalname;
                 //insert the image into database
-                await db.query(`INSERT INTO institution_bills (sl_no,fileName,filetype,data) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3)`,[fileName,fileType,fileBuffer]);
+                await db.query(`INSERT INTO admin_bills (sl_no,fileName,filetype,data) VALUES (${sl_no.rows[0].sl_no},$1,$2,$3)`,[fileName,fileType,fileBuffer]);
             }
-            console.log("new institution payment details are added successfully");
-            req.flash("success","New institution payment details added successfully");
+            console.log("new admin payment details are added successfully");
+            req.flash("success","New admin payment details added successfully");
             res.redirect("/list_all_payment_details");
             return;
         } catch (error) {
@@ -298,7 +379,7 @@ export const getTransferAdminPaymentDetailsPage = async(req,res)=>{
     }
     try {
         // Check if the record exists and get that record
-        const recordCheck = await db.query("SELECT institution_payment_details.*, institution_bills.sl_no AS bill_sl_no, institution_users.institution_name FROM institution_payment_details JOIN institution_users ON institution_payment_details.institution_id = institution_users.institution_id LEFT JOIN institution_bills ON institution_payment_details.sl_no = institution_bills.sl_no WHERE institution_payment_details.sl_no = $1",[sl_no]);
+        const recordCheck = await db.query("SELECT admin_payment_details.*, admin_bills.sl_no AS bill_sl_no FROM admin_payment_details LEFT JOIN admin_bills ON admin_payment_details.sl_no = admin_bills.sl_no WHERE admin_payment_details.sl_no = $1",[sl_no]);
         if (recordCheck.rowCount === 0) {
             req.flash("danger","Payment details not found");
             res.redirect("/list_all_payment_details");
@@ -306,7 +387,7 @@ export const getTransferAdminPaymentDetailsPage = async(req,res)=>{
         }
 
         // Get a list of all institution users
-        const institution_users = await db.query("SELECT * FROM institution_users");
+        const institution_users = await db.query("SELECT institution_id,institution_name FROM institution_users");
         // Send to transfer options page
         res.render("transfer_admin_payment_details.ejs",{
             sl_no: sl_no,
@@ -324,31 +405,104 @@ export const getTransferAdminPaymentDetailsPage = async(req,res)=>{
 
 export const postTransferAdminPaymentDetails = async(req,res)=>{
     const institution_to_transfer_to = req.body.institution_to_transfer_to;
-    const sl_no = req.body.sl_no;
-    if (!institution_to_transfer_to || !sl_no) {
+    const admin_payment_sl_no = req.body.sl_no;
+    if (!institution_to_transfer_to || !admin_payment_sl_no) {
         req.flash("danger","Invalid request");
         res.redirect("/list_all_payment_details");
         return;
     }
     try {
-        // Make sure sl_no entry exists and it belongs to the admin institution
-        const adminCheck = await db.query("SELECT * FROM institution_payment_details WHERE sl_no = $1 AND institution_id = 'ADMIN_TEMP_INSTITUTION'",[sl_no]);
-        if (adminCheck.rowCount === 0) {
-            req.flash("danger","Payment details not found");
-            res.redirect("/list_all_payment_details");
-            return;
+        await db.query('BEGIN');
+        
+        // Get admin payment record
+        const adminPayment = await db.query(
+            'SELECT * FROM admin_payment_details WHERE sl_no = $1',
+            [admin_payment_sl_no]
+        );
+
+        // Check if the record exists
+        if (!adminPayment.rows[0]) {
+            req.flash('error', 'Payment details not found');
+            console.log('Payment details not found');
+            res.redirect('/admin/payments');
         }
-        // Transfer the payment details
-        await db.query("UPDATE institution_payment_details SET institution_id = $1 WHERE sl_no = $2",[institution_to_transfer_to,sl_no]);
-        console.log(`Payment details with sl_no ${sl_no} transferred to institution ${institution_to_transfer_to}`);
-        req.flash("success","Payment details transferred successfully");
-        res.redirect("/list_all_payment_details");
-        return;
+
+        // Check if receipt number or year already exists for this institution
+        const receiptCheck = await db.query(
+            'SELECT sl_no FROM institution_payment_details WHERE receipt_no_or_date = $1 UNION SELECT sl_no FROM institution_payment_details WHERE institution_id = $2 AND payment_year = $3',
+            [adminPayment.rows[0].receipt_no_or_date,institution_to_transfer_to,adminPayment.rows[0].payment_year]
+        );
+        if (receiptCheck.rowCount > 0) {
+            req.flash('danger', 'A payment record with this receipt number or year already exists for this institution');
+            return res.redirect(`/transfer_admin_payment_details?sl_no=${admin_payment_sl_no}`);
+        }
+        
+        
+        // Extract values from admin payment record
+        const {
+            payment_year, receipt_no_or_date, property_tax, rebate, service_tax,
+            dimension_of_vacant_area_sqft, dimension_of_building_area_sqft,
+            total_dimension_in_sqft, usage_of_building, to_which_department_paid,
+            cesses, interest, penalty_arrears, total_amount, remarks,
+            number_of_floors, basement_floor_sqft, ground_floor_sqft,
+            first_floor_sqft, second_floor_sqft, third_floor_sqft
+        } = adminPayment.rows[0];
+
+        // Insert into institution_payment_details
+        const paymentResult = await db.query(`
+            INSERT INTO institution_payment_details(
+            institution_id, payment_year, receipt_no_or_date, 
+            property_tax, rebate, service_tax,
+            dimension_of_vacant_area_sqft, dimension_of_building_area_sqft,
+            total_dimension_in_sqft, usage_of_building,
+            to_which_department_paid, cesses, interest,
+            penalty_arrears, total_amount, remarks,
+            number_of_floors, basement_floor_sqft,
+            ground_floor_sqft, first_floor_sqft,
+            second_floor_sqft, third_floor_sqft
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+                 $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+            RETURNING sl_no`,
+            [
+            institution_to_transfer_to, // This is how we transfer the record to an institution
+            payment_year, receipt_no_or_date, property_tax, rebate, service_tax,
+            dimension_of_vacant_area_sqft, dimension_of_building_area_sqft,
+            total_dimension_in_sqft, usage_of_building, to_which_department_paid,
+            cesses, interest, penalty_arrears, total_amount, remarks,
+            number_of_floors, basement_floor_sqft, ground_floor_sqft,
+            first_floor_sqft, second_floor_sqft, third_floor_sqft
+            ]
+        );
+        
+        // Transfer bills if any
+        const bills = await db.query(
+            'SELECT * FROM admin_bills WHERE sl_no = $1',
+            [admin_payment_sl_no]
+        );
+        
+        for (const bill of bills.rows) {
+            await db.query(`
+                INSERT INTO institution_bills(sl_no, filename, filetype, data)
+                VALUES ($1, $2, $3, $4)`,
+                [paymentResult.rows[0].sl_no, bill.filename, bill.filetype, bill.data]
+            );
+        }
+        
+        // Delete admin payment and associated bills
+        await db.query(
+            'DELETE FROM admin_payment_details WHERE sl_no = $1',
+            [admin_payment_sl_no]
+        );
+        
+        await db.query('COMMIT');
+        req.flash('success', 'Payment details transferred successfully');
+        res.redirect('/list_all_payment_details');
+        
     } catch (error) {
-        console.error("Error transferring payment details:", error);
-        req.flash("danger","An error occurred while transferring payment details.");
-        res.redirect("/list_all_payment_details");
-        return;
+        await db.query('ROLLBACK');
+        console.error('Transfer error:', error);
+        req.flash('error', 'Failed to transfer payment details');
+        res.redirect('/list_all_payment_details');
     }
 };
 

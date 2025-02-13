@@ -47,7 +47,7 @@
         <th>APPROVED BY DIVISION USER?</th>
         <th style="text-align: center;" colspan="2">OPTIONS</th>
     </tr>
-    <% institution_payment_details_in_division.forEach((entry)=>{ %>
+    <% institution_payment_details.forEach((entry)=>{ %>
         <tr>
             <td><%=entry.institution_id%></td>
             <td><%=entry.institution_name%></td>
@@ -86,13 +86,91 @@
                     <a class="btn btn-warning" disabled>No Bill Uploaded</a>
                 </td>
             <% } %>
-            <% if (entry.institution_id === 'ADMIN_TEMP_INSTITUTION') { %>
-                <td>
-                    <a class="btn btn-info" href="/transfer_admin_payment_details?sl_no=<%=entry.sl_no%>">Transfer to another institution</a>
-                </td>
-            <% } %>
         </tr>
 
+    <% }) %>
+
+</table>
+</div>
+
+<h3>Admin Properties Payment Details</h3>
+<div class="overflow-scroll">
+<table>
+    <tr>
+        <th>PROPERTY NAME</th>
+        <th>COUNTRY</th>
+        <th>STATE</th>
+        <th>DISTRICT</th>
+        <th>TALUK</th>
+        <th>VILLAGE/CITY</th>
+        <th>PID</th>
+        <th>KHATHA/PROPERTY NO</th>
+        <th>NAME OF KHATHADAR</th>
+        <th>TYPE OF BUILDING</th>
+        <th>DIMENSION OF VACANT AREA IN SQFT</th>
+        <th>DIMENSION OF BUILDING AREA IN SQFT</th>
+        <th>TOTAL DIMENSION IN SQFT</th>
+        <th>NO OF FLOORS</th>
+        <th>BASEMENT FLOOR IN SQFT</th>
+        <th>GROUND FLOOR IN SQFT</th>
+        <th>FIRST FLOOR IN SQFT</th>
+        <th>SECOND FLOOR IN SQFT</th>
+        <th>THIRD FLOOR IN SQFT</th>
+        <th>USAGE OF BUILDING</th>
+        <th>PROPERTY TAX</th>
+        <th>REBATE</th>
+        <th>SERVICE TAX</th>
+        <th>CESSES</th>
+        <th>INTEREST</th>
+        <th>PENALTY/ARREARS</th>
+        <th>TOTAL AMOUNT</th>
+        <th>TO WHICH DEPARTMENT PAID</th>
+        <th>YEAR</th>
+        <th>RECEIPT NO / DATE</th>
+        <th>REMARKS</th>
+        <th>BILL</th>
+        <th style="text-align: center;" colspan="1">OPTIONS</th>
+    </tr>
+    <% admin_payment_details.forEach((entry)=>{ %>
+        <tr>
+            <td><%=entry.property_name%></td>
+            <td><%=entry.country%></td>
+            <td><%=entry.state%></td>
+            <td><%=entry.district%></td>
+            <td><%=entry.taluk%></td>
+            <td><%=entry.village_or_city%></td>
+            <td><%=entry.pid || 'N/A'%></td>
+            <td><%=entry.khatha_or_property_no%></td>
+            <td><%=entry.name_of_khathadar%></td>
+            <td><%=entry.type_of_building || 'N/A'%></td>
+            <td><%=entry.dimension_of_vacant_area_sqft%></td>
+            <td><%=entry.dimension_of_building_area_sqft%></td>
+            <td><%=entry.total_dimension_in_sqft%></td>
+            <td><%=entry.number_of_floors%></td>
+            <td><%=entry.basement_floor_sqft%></td>
+            <td><%=entry.ground_floor_sqft%></td>
+            <td><%=entry.first_floor_sqft%></td>
+            <td><%=entry.second_floor_sqft%></td>
+            <td><%=entry.third_floor_sqft%></td>
+            <td><%=entry.usage_of_building%></td>
+            <td><%=entry.property_tax%></td>
+            <td><%=entry.rebate%></td>
+            <td><%=entry.service_tax%></td>
+            <td><%=entry.cesses%></td>
+            <td><%=entry.interest%></td>
+            <td><%=entry.penalty_arrears%></td>
+            <td><%=entry.total_amount%></td>
+            <td><%=entry.to_which_department_paid%></td>
+            <td><%=entry.payment_year%></td>
+            <td><%=entry.receipt_no_or_date%></td>
+            <td><%=entry.remarks%></td>
+            <% if (entry.bill_sl_no) { %>
+                <td><a class="btn btn-info" href="/view_image/<%=entry.sl_no%>?type=admin">View Bill</a></td>
+            <% } else { %>
+                <td><a class="btn btn-warning" disabled>No Bill Uploaded</a></td>
+            <% } %>
+                <td><a class="btn btn-info" href="/transfer_admin_payment_details?sl_no=<%=entry.sl_no%>">Transfer to another institution</a></td>
+        </tr>
     <% }) %>
 
 </table>

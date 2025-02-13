@@ -91,6 +91,43 @@ const createTablesIfNotExists = (p_env) => {
             ON DELETE CASCADE)`
         );
 
+        db.query(`CREATE TABLE IF NOT EXISTS public.admin_payment_details(
+            sl_no SERIAL PRIMARY KEY,
+            property_name character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            payment_year character varying(200) NOT NULL,
+            receipt_no_or_date character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            property_tax integer NOT NULL,
+            rebate integer NOT NULL,
+            service_tax integer NOT NULL,
+            dimension_of_vacant_area_sqft integer NOT NULL,
+            dimension_of_building_area_sqft integer NOT NULL,
+            total_dimension_in_sqft integer NOT NULL,
+            usage_of_building character varying(200) NOT NULL,
+            to_which_department_paid character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            cesses integer NOT NULL,
+            interest integer NOT NULL,
+            penalty_arrears integer NOT NULL,
+            total_amount integer NOT NULL,
+            remarks character varying(1000) COLLATE pg_catalog."default" NOT NULL,
+            number_of_floors integer NOT NULL,
+            basement_floor_sqft integer NOT NULL,
+            ground_floor_sqft integer NOT NULL,
+            first_floor_sqft integer NOT NULL,
+            second_floor_sqft integer NOT NULL,
+            third_floor_sqft integer NOT NULL,
+            country character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            state character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            district character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            taluk character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            village_or_city character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            pid character varying(200) COLLATE pg_catalog."default",
+            khatha_or_property_no character varying(200) COLLATE pg_catalog."default" NOT NULL,
+            name_of_khathadar character varying(500) COLLATE pg_catalog."default" NOT NULL,
+            type_of_building character varying(200) COLLATE pg_catalog."default",
+            CONSTRAINT admin_payment_details_receipt_no_or_date_key UNIQUE (receipt_no_or_date)
+            )`
+        );
+
         db.query(`CREATE TABLE IF NOT EXISTS public.institution_bills(
             sl_no integer NOT NULL,
             filename character varying(255) COLLATE pg_catalog."default" NOT NULL,
@@ -102,9 +139,20 @@ const createTablesIfNotExists = (p_env) => {
             ON UPDATE CASCADE
             ON DELETE CASCADE)`
         );
+        db.query(`CREATE TABLE IF NOT EXISTS public.admin_bills(
+            sl_no integer NOT NULL,
+            filename character varying(255) COLLATE pg_catalog."default" NOT NULL,
+            filetype character varying(50) COLLATE pg_catalog."default",
+            data bytea,
+            uploaded_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT admin_bills_sl_no_fkey FOREIGN KEY (sl_no)
+                REFERENCES public.admin_payment_details (sl_no) 
+                ON UPDATE CASCADE
+                ON DELETE CASCADE
+        )`);
+
+
         db.query(`INSERT INTO admins (admin_id,email, password) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING`,[1,p_env.ADMIN_EMAIL, p_env.ADMIN_PASSWORD]);
-        db.query(`INSERT INTO public.division_users(admin_id, division_id, division, email, password, phone_number) VALUES(1, 'ADMIN_TEMP_DIVISION', 'Admin Division', $1, $2, 0000000000) ON CONFLICT DO NOTHING`,[p_env.ADMIN_DIV_EMAIL, p_env.ADMIN_DIV_PASSWORD]);
-        db.query(`INSERT INTO public.institution_users(division_id, email, password, phone_number, institution_id, country, state, district, taluk, institution_name, village_or_city, khatha_or_property_no, name_of_khathadar) VALUES('ADMIN_TEMP_DIVISION', $1, $2, 1111111111, 'ADMIN_TEMP_INSTITUTION', 'India', 'Karnataka', 'Mysuru', 'Mysuru', 'ADMIN_TEMP_INSTITUTION', 'Mysuru', '123456789', 'ADMIN_TEMP_INSTITUTION') ON CONFLICT DO NOTHING`,[p_env.ADMIN_INST_EMAIL, p_env.ADMIN_INST_PASSWORD]);
 
     console.log("Tables created successfully");
     }
