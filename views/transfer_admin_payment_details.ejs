@@ -72,7 +72,7 @@
             <td><%=record.remarks%></td>
             <% if (record.bill_sl_no) { %>
                 <td>
-                    <a class="btn btn-info" href="/view_image/<%=record.bill_sl_no%>">View Bill</a>
+                    <a class="btn btn-info" href="/view_image/<%=entry.sl_no%>?type=admin">View Bill</a>
                 </td>
             <% } else { %>
                 <td>
