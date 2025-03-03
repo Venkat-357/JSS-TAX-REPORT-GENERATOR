@@ -170,6 +170,7 @@ export const getDeleteInstitutionPage = async(req,res)=>{
         console.log("the institution user is deleted successfully");
         req.flash("success","Institution user deleted successfully");
         res.redirect("/list_institution_users_in_division");
+        return;
     } catch (error) {
         console.log("Failed to delete institution user");
         req.flash("danger","Failed to delete institution user");

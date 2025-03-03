@@ -30,6 +30,7 @@ export function allowLoggedIn(req, res, next) {
         return next();
     }
     res.redirect('/login');
+    return;
 }
 export function allowAdmins(req, res, next) {
     /**
@@ -47,6 +48,7 @@ export function allowAdmins(req, res, next) {
         return next();
     }
     res.redirect('/login');
+    return;
 }
 
 export function allowDivisionUsers(req, res, next) {
@@ -65,6 +67,7 @@ export function allowDivisionUsers(req, res, next) {
         return next();
     }
     res.redirect('/login');
+    return;
 }
 
 export function allowInstitutionUsers(req, res, next) {
@@ -85,6 +88,7 @@ export function allowInstitutionUsers(req, res, next) {
         return next();
     }
     res.redirect('/login');
+    return;
 }
 
 export function allowAdminsAndDivisionUsers(req, res, next) {
@@ -105,6 +109,7 @@ export function allowAdminsAndDivisionUsers(req, res, next) {
         return next();
     }
     res.redirect('/login');
+    return;
 }
 
 export function allowAdminsAndInstitutionUsers(req, res, next) {
@@ -125,4 +130,5 @@ export function allowAdminsAndInstitutionUsers(req, res, next) {
         return next();
     }
     res.redirect('/login');
+    return;
 }
