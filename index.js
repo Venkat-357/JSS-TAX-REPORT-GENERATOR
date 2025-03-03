@@ -66,13 +66,17 @@ app.get("/home", allowLoggedIn, async(req,res) => {
     // Redirect to the correct page based on the type of user
     if (req.session.isAdmin) {
         res.redirect("/admin");
+        return;
     } else if (req.session.isDivisionUser) {
         res.redirect("/division");
+        return;
     } else if (req.session.isInstitutionUser) {
         res.redirect("/institution");
+        return;
     } else {
         req.flash("danger","Was not able to redirect to the correct page");
         res.send("Was not able to redirect to the correct page"); // This is the only blank page in the app
+        return;
     }
 });
 

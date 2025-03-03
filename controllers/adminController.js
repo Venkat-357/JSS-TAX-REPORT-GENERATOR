@@ -106,6 +106,7 @@ export const getDeleteDivisionUserPage = async(req,res)=>{
     console.log("the division user is deleted successfully");
     req.flash("success","Division user deleted successfully");
     res.redirect("/list_all_division_users");
+    return;
 };
 
 // Getting a list of all institution users for viewing by admins
@@ -425,6 +426,7 @@ export const postTransferAdminPaymentDetails = async(req,res)=>{
             req.flash('error', 'Payment details not found');
             console.log('Payment details not found');
             res.redirect('/admin/payments');
+            return;
         }
 
         // Check if receipt number or year already exists for this institution
@@ -497,12 +499,14 @@ export const postTransferAdminPaymentDetails = async(req,res)=>{
         await db.query('COMMIT');
         req.flash('success', 'Payment details transferred successfully');
         res.redirect('/list_all_payment_details');
+        return;
         
     } catch (error) {
         await db.query('ROLLBACK');
         console.error('Transfer error:', error);
         req.flash('error', 'Failed to transfer payment details');
         res.redirect('/list_all_payment_details');
+        return;
     }
 };
 
@@ -519,6 +523,7 @@ export const getComprehensiveReportAdminPage = async(req,res)=>{
         console.log(error);
         req.flash("danger","Failed to generate comprehensive report");
         res.redirect("/home");
+        return;
     }
     return;
 };
@@ -536,6 +541,7 @@ export const getLocalReportAdminPage = async(req,res)=>{
         console.log(error);
         req.flash("danger","Failed to generate local report");
         res.redirect("/home");
+        return;
     }
     return;
 };
